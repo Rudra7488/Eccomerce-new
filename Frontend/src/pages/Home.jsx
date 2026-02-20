@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import CategorySection from '../components/CategorySection';
-import DealsSection from '../components/DealsSection';
+import ProductsSection from '../components/ProductsSection';
 import Footer from '../components/Footer';
 
 const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const searchQuery = searchParams.get('search');
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -22,7 +26,7 @@ const Home = () => {
       <Navbar />
       <Hero />
       <CategorySection onCategorySelect={handleCategorySelect} />
-      <DealsSection selectedCategory={selectedCategory} />
+      <ProductsSection selectedCategory={selectedCategory} searchQuery={searchQuery} />
       <Footer />
     </div>
   );

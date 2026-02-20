@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { translations } from '../translations';
 
 const categories = [
   { name: 'Furniture', color: 'bg-emerald-700', image: '🪑' },
@@ -10,9 +12,12 @@ const categories = [
 ];
 
 const CategorySection = ({ onCategorySelect }) => {
+  const currentLang = useSelector((state) => state.language.currentLanguage);
+  const t = translations[currentLang];
+
   return (
     <div className="py-16 px-4 sm:px-8 bg-white">
-      <h2 className="text-2xl font-bold text-gray-800 mb-8">Shop Our Top Categories</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-8">{t.top_categories}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {categories.map((cat, index) => (
           <div 
@@ -20,7 +25,7 @@ const CategorySection = ({ onCategorySelect }) => {
             onClick={() => onCategorySelect(cat.name)}
             className={`${cat.color} rounded-xl p-4 h-64 relative overflow-hidden cursor-pointer transform hover:-translate-y-1 transition duration-300 shadow-lg group`}
           >
-            <h3 className="text-white text-xl font-semibold relative z-10">{cat.name}</h3>
+            <h3 className="text-white text-xl font-semibold relative z-10">{t[cat.name] || cat.name}</h3>
             <div className="absolute bottom-0 right-0 text-9xl opacity-50 transform translate-x-4 translate-y-4 group-hover:scale-110 transition">
               {cat.image}
             </div>

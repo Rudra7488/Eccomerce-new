@@ -1,11 +1,17 @@
 import React from 'react';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { addToCart, removeFromCart } from '../store/slices/cartSlice';
+import { translations } from '../translations';
 
 const Cart = ({ isOpen, onClose }) => {
   const cart = useSelector((state) => state.cart);
+  const currentLang = useSelector((state) => state.language.currentLanguage);
+  const t = translations[currentLang];
+  
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleIncrement = (item) => {
     dispatch(addToCart(item));
@@ -33,7 +39,7 @@ const Cart = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#003d29] text-white">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <ShoppingBag size={20} />
-              Shopping Cart ({cart.totalQuantity})
+              {t.shopping_cart} ({cart.totalQuantity})
             </h2>
             <button 
               onClick={onClose}
@@ -50,13 +56,13 @@ const Cart = ({ isOpen, onClose }) => {
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-2">
                    <ShoppingBag size={40} className="text-gray-400" />
                 </div>
-                <p className="text-lg font-medium">Your cart is empty</p>
-                <p className="text-sm text-center max-w-xs">Looks like you haven't added anything to your cart yet.</p>
+                <p className="text-lg font-medium">{t.empty_cart}</p>
+                <p className="text-sm text-center max-w-xs">{t.empty_cart_desc}</p>
                 <button 
                   onClick={onClose}
                   className="mt-4 px-6 py-2 bg-[#003d29] text-white rounded-full text-sm font-medium hover:bg-[#002a1c] transition"
                 >
-                  Start Shopping
+                  {t.start_shopping}
                 </button>
               </div>
             ) : (
@@ -64,8 +70,16 @@ const Cart = ({ isOpen, onClose }) => {
                 {cart.items.map((item) => (
                   <div key={item.id} className="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-green-100 transition">
                     {/* Image */}
-                    <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center text-4xl shadow-sm shrink-0">
-                      {item.image}
+                    <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center text-4xl shadow-sm shrink-0 overflow-hidden">
+                      {(item.image?.startsWith('http') || item.image?.startsWith('data:') || item.image?.startsWith('/') || item.image?.length > 20) ? (
+                        <img 
+                          src={item.image.startsWith('http') || item.image.startsWith('data:') || item.image.startsWith('/') ? item.image : `data:image/jpeg;base64,${item.image}`} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <span>{item.image}</span>
+                      )}
                     </div>
 
                     {/* Details */}
@@ -73,7 +87,7 @@ const Cart = ({ isOpen, onClose }) => {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold text-gray-800 line-clamp-1">{item.title}</h3>
-                          <p className="text-green-600 font-bold mt-1">${item.price.toFixed(2)}</p>
+                          <p className="text-green-600 font-bold mt-1">₹{item.price.toFixed(2)}</p>
                         </div>
                         <button 
                           onClick={() => handleDecrement(item.id)}
@@ -100,7 +114,7 @@ const Cart = ({ isOpen, onClose }) => {
                             <Plus size={14} />
                           </button>
                         </div>
-                        <p className="font-semibold text-gray-800">${item.totalPrice.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-800">₹{item.totalPrice.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>
@@ -113,20 +127,26 @@ const Cart = ({ isOpen, onClose }) => {
           {cart.items.length > 0 && (
             <div className="p-6 bg-white border-t border-gray-100 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
               <div className="flex justify-between items-center text-gray-600">
-                <span>Subtotal</span>
-                <span className="font-bold text-gray-900">${cart.totalAmount.toFixed(2)}</span>
+                <span>{t.subtotal}</span>
+                <span className="font-bold text-gray-900">₹{cart.totalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-gray-600">
-                <span>Shipping</span>
-                <span className="text-green-600 font-medium">Free</span>
+                <span>{t.shipping}</span>
+                <span className="text-green-600 font-medium">{t.free}</span>
               </div>
               <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                <span className="text-lg font-bold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-[#003d29]">${cart.totalAmount.toFixed(2)}</span>
+                <span className="text-lg font-bold text-gray-900">{t.total}</span>
+                <span className="text-xl font-bold text-[#003d29]">₹{cart.totalAmount.toFixed(2)}</span>
               </div>
               
-              <button className="w-full py-3.5 bg-[#003d29] text-white rounded-xl font-bold hover:bg-[#002a1c] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                Checkout
+              <button 
+                onClick={() => {
+                  onClose();
+                  navigate('/checkout');
+                }}
+                className="w-full py-3.5 bg-[#003d29] text-white rounded-xl font-bold hover:bg-[#002a1c] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                {t.checkout}
               </button>
             </div>
           )}

@@ -1,6 +1,11 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { translations } from '../translations';
 
 const Hero = () => {
+  const currentLang = useSelector((state) => state.language.currentLanguage);
+  const t = translations[currentLang];
+
   return (
     <div className="relative w-full h-[500px] bg-[#fdfbf0] overflow-hidden flex items-center">
       {/* Background decoration - mimicing the wall/floor split */}
@@ -11,14 +16,17 @@ const Hero = () => {
         {/* Text Content */}
         <div className="md:w-1/2 space-y-6 text-[#003d29]">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            Shopping And <br />
-            Department Store.
+            {t.hero_title.split('And').map((part, i) => (
+              <React.Fragment key={i}>
+                {part} {i === 0 && currentLang === 'en' ? 'And' : ''} {i === 0 && <br />}
+              </React.Fragment>
+            ))}
           </h1>
           <p className="text-gray-700 text-lg max-w-md">
-            Shopping is a bit of a relaxing hobby for me, which is sometimes troubling for the bank balance.
+            {t.hero_desc}
           </p>
           <button className="bg-[#003d29] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#002a1c] transition">
-            Learn More
+            {t.learn_more}
           </button>
         </div>
 

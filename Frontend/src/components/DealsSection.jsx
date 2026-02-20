@@ -1,7 +1,10 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { addToCart } from '../store/slices/cartSlice';
+import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { Heart, Star } from 'lucide-react';
+import { translations } from '../translations';
 
 const products = [
   // Tech
@@ -212,9 +215,26 @@ const products = [
 
 const DealsSection = ({ selectedCategory }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const currentLang = useSelector((state) => state.language.currentLanguage);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const t = translations[currentLang];
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
+  };
+
+  const handleToggleWishlist = (product) => {
+    dispatch(toggleWishlist(product));
+  };
+
+  const isItemInWishlist = (id) => {
+    return wishlistItems.some((item) => item.id === id);
+  };
+
+  const handleBuyNow = (product) => {
+    dispatch(addToCart(product));
+    navigate('/checkout');
   };
 
   const filteredProducts = selectedCategory && selectedCategory !== 'All'
@@ -225,24 +245,37 @@ const DealsSection = ({ selectedCategory }) => {
     <div className="py-8 px-4 sm:px-8 bg-white" id="products-section">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {filteredProducts.map((product) => (
-          <div key={product.id} className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition duration-300 border border-transparent hover:border-gray-200">
+          <div key={product.id} className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition duration-300 border border-transparent hover:border-gray-200 flex flex-col h-full">
             <div className={`h-64 ${product.bgColor} relative flex items-center justify-center p-8 group`}>
                {product.discount && (
                  <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
-                   {product.discount}% OFF
+                   {product.discount}% {t.off}
                  </div>
                )}
-               <div className="text-9xl drop-shadow-lg transform group-hover:scale-110 transition duration-500">
-                 {product.image}
+               <div className="text-9xl drop-shadow-lg transform group-hover:scale-110 transition duration-500 w-full h-full flex items-center justify-center">
+                 {(product.image?.startsWith('http') || product.image?.startsWith('data:') || product.image?.startsWith('/') || product.image?.length > 20) ? (
+                   <img 
+                     src={product.image.startsWith('http') || product.image.startsWith('data:') || product.image.startsWith('/') ? product.image : `data:image/jpeg;base64,${product.image}`} 
+                     alt={product.title} 
+                     className="w-full h-full object-contain" 
+                   />
+                 ) : (
+                   <span>{product.image}</span>
+                 )}
                </div>
-               <button className="absolute top-4 right-4 p-2 bg-white rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition shadow-sm">
-                 <Heart size={20} />
+               <button 
+                 onClick={() => handleToggleWishlist(product)}
+                 className={`absolute top-4 right-4 p-2 bg-white rounded-full transition shadow-sm ${
+                   isItemInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                 }`}
+               >
+                 <Heart size={20} className={isItemInWishlist(product.id) ? 'fill-current' : ''} />
                </button>
             </div>
-            <div className="p-4">
+            <div className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-bold text-gray-900 text-lg">{product.title}</h3>
-                <span className="font-bold text-gray-900">${product.price}</span>
+                <span className="font-bold text-gray-900">₹{product.price}</span>
               </div>
               <p className="text-xs text-gray-500 mb-3 line-clamp-2">{product.description}</p>
               <div className="flex items-center gap-1 mb-4">
@@ -251,12 +284,20 @@ const DealsSection = ({ selectedCategory }) => {
                 ))}
                 <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
               </div>
-              <button 
-                onClick={() => handleAddToCart(product)}
-                className="w-auto px-6 py-2 border border-gray-900 rounded-full font-medium text-sm hover:bg-gray-900 hover:text-white transition"
-              >
-                Add to Cart
-              </button>
+              <div className="flex items-center gap-2 mt-auto">
+                <button 
+                  onClick={() => handleAddToCart(product)}
+                  className="flex-1 px-3 py-2 border border-gray-900 rounded-full font-medium text-xs hover:bg-gray-900 hover:text-white transition whitespace-nowrap"
+                >
+                  {t.add_to_cart}
+                </button>
+                <button 
+                  onClick={() => handleBuyNow(product)}
+                  className="flex-1 px-3 py-2 bg-[#003d29] text-white border border-[#003d29] rounded-full font-medium text-xs hover:bg-[#002a1c] transition whitespace-nowrap"
+                >
+                  {t.buy_now}
+                </button>
+              </div>
             </div>
           </div>
         ))}

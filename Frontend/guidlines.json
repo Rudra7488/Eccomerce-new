@@ -1,0 +1,45 @@
+{
+  "brand": "VELORA",
+  "colors": {
+    "primary": {
+      "hex": "#003d29",
+      "name": "Deep Forest Green",
+      "usage": "Navbar, Hero headings, Primary buttons, Footer"
+    },
+    "secondary": {
+      "hex": "#00a76f",
+      "name": "Vibrant Green",
+      "usage": "Hover states, Category icons, Accent elements"
+    },
+    "background": {
+      "main": "#F8FAFC",
+      "hero": "#C5EAD9",
+      "card": "#FFFFFF"
+    },
+    "text": {
+      "heading": "#003d29",
+      "body": "#4B5563",
+      "muted": "#9CA3AF"
+    },
+    "accents": {
+      "orange": "#FF9900",
+      "red": "#FF4D4D",
+      "blue": "#2D68FF",
+      "pink": "#FF69B4"
+    }
+  },
+  "typography": {
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "weights": {
+      "bold": 700,
+      "semibold": 600,
+      "medium": 500,
+      "regular": 400
+    }
+  },
+  "design_elements": {
+    "borderRadius": "rounded-3xl (large) for cards, rounded-xl (medium) for inputs",
+    "shadows": "shadow-sm for cards, shadow-lg for primary buttons",
+    "button_style": "High padding, bold text, transition-all duration-300"
+  }
+}
