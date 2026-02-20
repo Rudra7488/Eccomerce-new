@@ -8,7 +8,7 @@ urlpatterns = [
     # Admin routes - get all products
     path('products/', get_products, name='get-products'),
     
-    # Vendor routes - get vendor's products
+    # Vendor routes - get vendor's productsl
     path('vendor/products/', get_vendor_products, name='get-vendor-products'),
     
     # Individual product routes
