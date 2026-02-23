@@ -124,6 +124,10 @@ const cartSlice = createSlice({
       } else {
         existingItem.quantity++;
         existingItem.totalPrice += newItem.price;
+        // Update image if new one provided
+        if (newItem.image) {
+          existingItem.image = newItem.image;
+        }
       }
     },
     removeFromCartLocal(state, action) {
@@ -147,6 +151,13 @@ const cartSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Helper to get image preference
+    const getProductImage = (product) => {
+        const storedImage = localStorage.getItem(`cart_image_${product.id}`);
+        if (storedImage) return storedImage;
+        return product.images && product.images.length > 0 ? product.images[0] : '';
+    };
+
     builder
       .addCase(fetchCart.fulfilled, (state, action) => {
         if (action.payload) {
@@ -156,7 +167,7 @@ const cartSlice = createSlice({
                 price: item.product.price,
                 quantity: item.quantity,
                 totalPrice: item.total_price,
-                image: item.product.images && item.product.images.length > 0 ? item.product.images[0] : '',
+                image: getProductImage(item.product),
             }));
             state.totalQuantity = action.payload.total_quantity;
             state.totalAmount = action.payload.total_amount;
@@ -170,7 +181,7 @@ const cartSlice = createSlice({
                 price: item.product.price,
                 quantity: item.quantity,
                 totalPrice: item.total_price,
-                image: item.product.images && item.product.images.length > 0 ? item.product.images[0] : '',
+                image: getProductImage(item.product),
             }));
             state.totalQuantity = action.payload.total_quantity;
             state.totalAmount = action.payload.total_amount;
@@ -184,7 +195,7 @@ const cartSlice = createSlice({
                 price: item.product.price,
                 quantity: item.quantity,
                 totalPrice: item.total_price,
-                image: item.product.images && item.product.images.length > 0 ? item.product.images[0] : '',
+                image: getProductImage(item.product),
             }));
             state.totalQuantity = action.payload.total_quantity;
             state.totalAmount = action.payload.total_amount;

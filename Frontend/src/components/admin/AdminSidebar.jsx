@@ -7,7 +7,11 @@ import {
   Settings, 
   LogOut, 
   Package,
-  ChevronRight
+  ChevronRight,
+  BarChart3,
+  Ticket,
+  Grid,
+  MessageSquare
 } from 'lucide-react';
 
 const AdminSidebar = () => {
@@ -32,6 +36,11 @@ const AdminSidebar = () => {
       path: '/admin/products' 
     },
     { 
+      title: 'Categories', 
+      icon: Grid, 
+      path: '/admin/categories' 
+    },
+    { 
       title: 'Orders', 
       icon: ShoppingBag, 
       path: '/admin/orders' 
@@ -40,6 +49,21 @@ const AdminSidebar = () => {
       title: 'Customers', 
       icon: Users, 
       path: '/admin/customers' 
+    },
+    { 
+      title: 'Coupon Code', 
+      icon: Ticket, 
+      path: '/admin/coupons' 
+    },
+    { 
+      title: 'Reviews', 
+      icon: MessageSquare, 
+      path: '/admin/reviews' 
+    },
+    { 
+      title: 'Reports', 
+      icon: BarChart3, 
+      path: '/admin/reports' 
     },
     { 
       title: 'Profile', 

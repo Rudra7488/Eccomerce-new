@@ -169,17 +169,87 @@ const ProductManagement = () => {
     }
   };
 
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Max dimensions
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Compress to JPEG with 0.7 quality
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve({ file, url: dataUrl });
+        };
+        img.onerror = () => {
+          // Fallback to original if image loading fails
+          console.error('Image load failed, using original');
+          resolve({ file, url: event.target.result });
+        };
+      };
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        // Resolve with null or handle error
+        resolve({ file, url: null }); 
+      };
+    });
+  };
+
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
-    files.forEach(file => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setUploadedImages(prev => [...prev, { file, url: e.target.result }]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (validFiles.length === 0) return;
+
+    const processingToast = toast.loading('Processing images...');
+
+    const fileProcessors = validFiles.map(file => compressImage(file));
+
+    Promise.all(fileProcessors)
+      .then(newImages => {
+        const validImages = newImages.filter(img => img.url);
+        if (validImages.length < newImages.length) {
+          toast.error('Some images could not be processed');
+        }
+        setUploadedImages(prev => [...prev, ...validImages]);
+        toast.dismiss(processingToast);
+        toast.success(`${validImages.length} image(s) added`);
+      })
+      .catch(error => {
+        console.error('Error processing files:', error);
+        toast.dismiss(processingToast);
+        toast.error('Failed to process some images');
+      });
+      
+    // Reset input to allow selecting the same file again if needed
+    event.target.value = '';
   };
 
   const removeImage = (index) => {
@@ -533,7 +603,7 @@ const ProductManagement = () => {
                       <div className="bg-[#111827] p-4 rounded-2xl shadow-sm group-hover:scale-110 transition-transform mb-3">
                         <Upload size={24} className="text-[#6366F1]" />
                       </div>
-                      <span className="text-sm font-bold text-[#F9FAFB]">Drop images here or click to browse</span>
+                      <span className="text-sm font-bold text-[#F9FAFB]">Drop multiple images here or click to browse</span>
                       <span className="text-xs text-gray-400 mt-1">Supports: JPG, PNG, WEBP (Max 5MB)</span>
                     </label>
                   </div>

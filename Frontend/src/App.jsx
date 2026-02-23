@@ -12,6 +12,9 @@ import ProductManagement from './pages/admin/ProductManagement';
 import OrderManagement from './pages/admin/OrderManagement';
 import CustomerManagement from './pages/admin/CustomerManagement';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminReports from './pages/admin/AdminReports';
+import CouponManagement from './pages/admin/CouponManagement';
+import CategoryManagement from './pages/admin/CategoryManagement';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -55,6 +58,9 @@ function App() {
           <Route path="/admin/orders" element={<OrderManagement />} />
           <Route path="/admin/customers" element={<CustomerManagement />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/coupons" element={<CouponManagement />} />
+          <Route path="/admin/categories" element={<CategoryManagement />} />
         </Routes>
     </Router>
   );

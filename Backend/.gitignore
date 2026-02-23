@@ -18,3 +18,19 @@ db.sqlite3
 # OS files
 .DS_Store
 Thumbs.db
+
+# Additional ignores
+*.pyo
+*.pyd
+*.pot
+*.log
+*.bak
+*.swp
+*.swo
+ENV/
+logs/
+media/
+
+node_modules/
+# Ignore frontend env
+../Frontend/.env
