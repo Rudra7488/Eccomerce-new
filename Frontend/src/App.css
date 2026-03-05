@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@theme {
+  --color-himalaya-green: #006d5b;
+  --color-himalaya-dark-green: #005c4b;
+  --color-himalaya-orange: #ff6b3d;
+  --color-himalaya-light-teal: #e6f1f0;
+  --color-himalaya-light-orange: #fff3ef;
+}
+

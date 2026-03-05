@@ -15,6 +15,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminReports from './pages/admin/AdminReports';
 import CouponManagement from './pages/admin/CouponManagement';
 import CategoryManagement from './pages/admin/CategoryManagement';
+import ReviewsManagement from './pages/admin/ReviewsManagement';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/coupons" element={<CouponManagement />} />
           <Route path="/admin/categories" element={<CategoryManagement />} />
+          <Route path="/admin/reviews" element={<ReviewsManagement />} />
         </Routes>
     </Router>
   );

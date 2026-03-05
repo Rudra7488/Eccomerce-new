@@ -94,7 +94,7 @@ const Wishlist = ({ isOpen, onClose }) => {
                       
                       <button 
                         onClick={() => handleAddToCart(item)}
-                        className="mt-3 flex items-center gap-2 text-xs font-bold text-white bg-[#003d29] px-4 py-2 rounded-full hover:bg-[#002a1c] transition"
+                        className="mt-3 flex items-center gap-2 text-[10px] font-black text-white bg-[#006d5b] px-4 py-2 rounded-tl-[15px] rounded-br-[15px] rounded-tr-none rounded-bl-none uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all shadow-md active:scale-95"
                       >
                         <ShoppingCart size={14} />
                         {t.add_to_cart}

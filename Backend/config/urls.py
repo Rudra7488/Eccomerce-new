@@ -10,8 +10,10 @@ urlpatterns = [
 
     path('api/vendor-admin/', include('apps.vendor_admin.urls.__init__')),
     path('api/auth/', include('apps.users.routes.auth_routes')),
+    path('api/users/', include('apps.users.routes.address_routes')),
     path('api/products/', include('apps.products.routes.product_routes')),
     path('api/wishlist/', include('apps.wishlist.routes.wishlist_routes')),
     path('api/cart/', include('apps.cart.urls')),
+    path('api/coupons/', include('apps.coupons.urls.coupon_urls')),
     path('', welcome),
 ]

@@ -89,7 +89,7 @@ const Navbar = () => {
   return (
     <div className="flex flex-col w-full">
       {/* Top Bar */}
-      <div className="bg-[#003d29] text-white py-2 px-4 sm:px-8 flex justify-between items-center text-xs sm:text-sm">
+      <div className="bg-[#006d5b] text-white py-2 px-4 sm:px-8 flex justify-between items-center text-xs sm:text-sm">
         <div className="flex items-center gap-2">
           <Phone size={14} />
           <span>+001234567890</span>
@@ -97,158 +97,145 @@ const Navbar = () => {
         <div className="hidden sm:flex items-center gap-4">
           <span>Get 50% Off on Selected Items</span>
           <span className="border-l border-white/30 h-3 mx-2"></span>
-          <a href="#" className="hover:underline">Shop Now</a>
+          <a href="#" className="hover:underline text-[#ff6b3d] font-bold">Shop Now</a>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative" ref={langRef}>
-            <div 
-              className="flex items-center gap-1 cursor-pointer hover:text-green-200 transition"
+            <button 
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+              className="flex items-center gap-1 hover:text-[#ff6b3d] transition-colors"
             >
               <Globe size={14} />
-              <span>
-                {currentLang === 'en' ? 'Eng' : currentLang === 'hi' ? 'हिंदी' : 'मराठी'}
-              </span>
-              <ChevronDown size={14} className={`transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''}`} />
-            </div>
+              <span className="uppercase">{currentLang}</span>
+              <ChevronDown size={14} />
+            </button>
             
             {isLangDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <button 
-                  onClick={() => handleLangChange('en')}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-green-50 transition flex items-center justify-between ${currentLang === 'en' ? 'text-[#003d29] font-bold bg-green-50' : 'text-gray-700'}`}
-                >
-                  English
-                  {currentLang === 'en' && <div className="w-1.5 h-1.5 bg-[#003d29] rounded-full"></div>}
-                </button>
-                <button 
-                  onClick={() => handleLangChange('hi')}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-green-50 transition flex items-center justify-between ${currentLang === 'hi' ? 'text-[#003d29] font-bold bg-green-50' : 'text-gray-700'}`}
-                >
-                  हिंदी (Hindi)
-                  {currentLang === 'hi' && <div className="w-1.5 h-1.5 bg-[#003d29] rounded-full"></div>}
-                </button>
-                <button 
-                  onClick={() => handleLangChange('mr')}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-green-50 transition flex items-center justify-between ${currentLang === 'mr' ? 'text-[#003d29] font-bold bg-green-50' : 'text-gray-700'}`}
-                >
-                  मराठी (Marathi)
-                  {currentLang === 'mr' && <div className="w-1.5 h-1.5 bg-[#003d29] rounded-full"></div>}
-                </button>
+              <div className="absolute top-full right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-32 z-[60] border border-gray-100">
+                <button onClick={() => handleLangChange('en')} className="w-full text-left px-4 py-2 hover:bg-[#e6f1f0] hover:text-[#006d5b] transition-colors">English</button>
+                <button onClick={() => handleLangChange('hi')} className="w-full text-left px-4 py-2 hover:bg-[#e6f1f0] hover:text-[#006d5b] transition-colors">Hindi</button>
+                <button onClick={() => handleLangChange('bn')} className="w-full text-left px-4 py-2 hover:bg-[#e6f1f0] hover:text-[#006d5b] transition-colors">Bengali</button>
+                <button onClick={() => handleLangChange('te')} className="w-full text-left px-4 py-2 hover:bg-[#e6f1f0] hover:text-[#006d5b] transition-colors">Telugu</button>
               </div>
             )}
-          </div>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-green-200 transition">
-            <span>{t.location}</span>
-            <ChevronDown size={14} />
           </div>
         </div>
       </div>
 
       {/* Main Navbar */}
-      <div className="bg-white py-4 px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
-        {/* Logo */}
-        <div className="flex items-center gap-2 text-2xl font-bold text-[#003d29]">
-           <div className="relative">
-             <ShoppingCart className="text-orange-500" size={28} />
-             {/* Simple leaf decoration simulation */}
-             <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
-           </div>
-           <span>Shopcart</span>
+      <div className="bg-white py-4 px-4 sm:px-8 flex justify-between items-center border-b border-gray-100 sticky top-0 z-50">
+        <div className="flex items-center gap-8 lg:gap-12">
+          <Link to="/" className="flex flex-col items-center group">
+            <span className="text-2xl sm:text-3xl font-black text-[#006d5b] tracking-tighter group-hover:text-[#ff6b3d] transition-colors">MOZARI</span>
+            <div className="h-1 w-full bg-[#ff6b3d] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-bold text-gray-700">
+            <Link to="/" className="flex flex-col items-center group">
+              <span className="hover:text-[#006d5b] transition-colors">Home</span>
+              <div className="h-0.5 w-full bg-[#ff6b3d] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+            </Link>
+            <Link to="/products" className="flex flex-col items-center group">
+              <span className="hover:text-[#006d5b] transition-colors">Shop</span>
+              <div className="h-0.5 w-full bg-[#ff6b3d] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+            </Link>
+            <Link to="/deals" className="flex flex-col items-center group">
+              <span className="hover:text-[#006d5b] transition-colors">Deals</span>
+              <div className="h-0.5 w-full bg-[#ff6b3d] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+            </Link>
+            <Link to="/about" className="flex flex-col items-center group">
+              <span className="hover:text-[#006d5b] transition-colors">About</span>
+              <div className="h-0.5 w-full bg-[#ff6b3d] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+            </Link>
+          </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 font-medium text-gray-700">
-          <div className="flex items-center gap-1 cursor-pointer hover:text-green-700">
-            Categories <ChevronDown size={16} />
-          </div>
-          <a href="#" className="hover:text-green-700">Deals</a>
-          <a href="#" className="hover:text-green-700">What's New</a>
-          <a href="#" className="hover:text-green-700">Delivery</a>
-        </nav>
-
-        {/* Search Bar */}
-        <div className="relative w-full md:w-auto md:flex-1 md:max-w-md mx-4">
-          <input 
-            type="text" 
-            placeholder={t.search_placeholder} 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-100 rounded-full py-2 px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-green-500"
-          />
-          <Search 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-green-500" 
-            size={18} 
-            onClick={(e) => handleSearch({ ...e, type: 'click' })}
-          />
-        </div>
-
-        {/* User Actions */}
-        <div className="flex items-center gap-6 text-gray-700 font-medium">
-          <div 
-            onClick={handleAccountClick}
-            className="flex items-center gap-2 cursor-pointer hover:text-green-700 transition"
-          >
-            <User size={20} />
-            <span>{t.account}</span>
-          </div>
-          <div className="relative">
-            <div 
-              className="flex items-center gap-2 cursor-pointer hover:text-green-700 relative"
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+        <div className="flex items-center gap-3 sm:gap-6">
+          <div className="relative hidden lg:block group">
+            <input 
+              type="text" 
+              placeholder={t.search_placeholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearch}
+              className="bg-gray-50 border border-gray-200 rounded-full py-2 px-6 pr-12 w-64 xl:w-80 focus:outline-none focus:ring-2 focus:ring-[#006d5b]/20 focus:border-[#006d5b] transition-all"
+            />
+            <button 
+              onClick={handleSearch}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006d5b] transition-colors"
             >
-              <Bell size={20} />
-              <span>{t.notifications}</span>
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {unreadCount}
-                </span>
+              <Search size={20} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="relative" ref={notificationRef}>
+              <button 
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="p-2 text-gray-600 hover:bg-[#e6f1f0] hover:text-[#006d5b] rounded-full transition-all relative"
+              >
+                <Bell size={22} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-[#ff6b3d] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              
+              {isNotificationOpen && (
+                <div className="absolute top-full right-0 mt-4 bg-white rounded-2xl shadow-2xl py-4 w-72 sm:w-80 z-[60] border border-gray-100 overflow-hidden">
+                  <div className="px-6 py-2 border-b border-gray-50 flex justify-between items-center">
+                    <h3 className="font-bold text-gray-900">Notifications</h3>
+                    <span className="text-xs text-[#006d5b] font-bold cursor-pointer">Mark all as read</span>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer border-l-4 ${n.read ? 'border-transparent' : 'border-[#006d5b]'}`}>
+                        <p className="text-sm text-gray-800 mb-1">{n.message}</p>
+                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{n.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-6 py-3 bg-gray-50 text-center">
+                    <button className="text-sm font-bold text-[#006d5b] hover:underline">View all notifications</button>
+                  </div>
+                </div>
               )}
             </div>
-            
-            {/* Notification Dropdown */}
-            {isNotificationOpen && (
-              <div ref={notificationRef} className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-100">
-                  <h3 className="font-semibold text-gray-800">Notifications</h3>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
-                        className={`p-4 border-b border-gray-100 ${!notification.read ? 'bg-blue-50' : 'bg-white'}`}
-                      >
-                        <p className="text-sm text-gray-800">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-gray-500">No notifications</div>
-                  )}
-                </div>
-                <div className="p-2 bg-gray-50 text-center">
-                  <button 
-                    className="text-sm text-green-700 hover:text-green-800 font-medium"
-                    onClick={() => setIsNotificationOpen(false)}
-                  >
-                    Mark all as read
-                  </button>
-                </div>
+
+            <button 
+              onClick={() => setIsWishlistOpen(true)}
+              className="p-2 text-gray-600 hover:bg-[#fff3ef] hover:text-[#ff6b3d] rounded-full transition-all relative"
+            >
+              <Heart size={22} />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 bg-[#ff6b3d] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="p-2 text-gray-600 hover:bg-[#e6f1f0] hover:text-[#006d5b] rounded-full transition-all relative"
+            >
+              <ShoppingCart size={22} />
+              {totalQuantity > 0 && (
+                <span className="absolute top-1 right-1 bg-[#006d5b] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">
+                  {totalQuantity}
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={handleAccountClick}
+              className="flex items-center gap-2 p-1 pr-3 hover:bg-gray-50 rounded-full transition-all border border-transparent hover:border-gray-200"
+            >
+              <div className="w-8 h-8 bg-[#e6f1f0] text-[#006d5b] rounded-full flex items-center justify-center">
+                <User size={18} />
               </div>
-            )}
-          </div>
-          <div 
-            className="flex items-center gap-2 cursor-pointer hover:text-green-700 relative"
-            onClick={() => setIsCartOpen(true)}
-          >
-            <ShoppingCart size={20} />
-            <span>{t.cart_label || 'Cart'}</span>
-            {totalQuantity > 0 && (
-              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                {totalQuantity}
-              </span>
-            )}
+              <span className="hidden sm:block text-sm font-bold text-gray-700">{t.account}</span>
+            </button>
           </div>
         </div>
       </div>

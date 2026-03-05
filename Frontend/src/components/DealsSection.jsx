@@ -287,7 +287,7 @@ const DealsSection = ({ selectedCategory }) => {
               <div className="flex items-center gap-2 mt-auto">
                 <button 
                   onClick={() => handleAddToCart(product)}
-                  className="flex-1 px-3 py-2 border border-gray-900 rounded-full font-medium text-xs hover:bg-gray-900 hover:text-white transition whitespace-nowrap"
+                  className="flex-1 px-3 py-2 bg-[#006d5b] text-white rounded-tl-[15px] rounded-br-[15px] rounded-tr-none rounded-bl-none font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all whitespace-nowrap"
                 >
                   {t.add_to_cart}
                 </button>

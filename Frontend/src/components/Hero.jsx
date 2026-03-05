@@ -14,18 +14,18 @@ const Hero = () => {
 
       <div className="container mx-auto px-4 sm:px-8 relative z-10 flex flex-col md:flex-row items-center">
         {/* Text Content */}
-        <div className="md:w-1/2 space-y-6 text-[#003d29]">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+        <div className="md:w-1/2 space-y-6 text-[#006d5b]">
+          <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight">
             {t.hero_title.split('And').map((part, i) => (
               <React.Fragment key={i}>
                 {part} {i === 0 && currentLang === 'en' ? 'And' : ''} {i === 0 && <br />}
               </React.Fragment>
             ))}
           </h1>
-          <p className="text-gray-700 text-lg max-w-md">
+          <p className="text-gray-700 text-lg max-w-md font-medium">
             {t.hero_desc}
           </p>
-          <button className="bg-[#003d29] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#002a1c] transition">
+          <button className="bg-[#006d5b] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-[#005c4b] transition shadow-xl shadow-green-900/20">
             {t.learn_more}
           </button>
         </div>

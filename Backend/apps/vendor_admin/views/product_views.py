@@ -77,22 +77,34 @@ def create_product(request):
     if request.user.role not in ['admin', 'vendor']:
         return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
     
-    # Ensure vendor is set to the authenticated user (for security)
-    data = request.data.copy()
-    
     print(f"Authenticated user: {request.user}")
     print(f"Request data: {request.data}")
     
-    serializer = VendorProductSerializer(data=data)
+    serializer = VendorProductSerializer(data=request.data)
     if serializer.is_valid():
+        data = serializer.validated_data
         # Create the product with the authenticated user as vendor
         try:
+            # Need to handle variants correctly for MongoEngine
+            from apps.vendor_admin.models.product_models import ProductVariant
+            variants_data = data.get('variants', [])
+            variants = [ProductVariant(**v) for v in variants_data]
+            
             product = Product(
                 name=data['name'],
                 description=data['description'],
                 price=float(data['price']),
                 stock_quantity=int(data.get('stock_quantity', 0)),
                 category=data.get('category', ''),
+                product_type=data.get('product_type', 'Solid'),
+                unit_type=data.get('unit_type', 'g'),
+                unit_value=float(data.get('unit_value', 0.0)),
+                expiry_date=data.get('expiry_date'),
+                variants=variants,
+                ingredients=data.get('ingredients', ''),
+                uses=data.get('uses', ''),
+                dose=data.get('dose', ''),
+                contra_indications=data.get('contra_indications', ''),
                 images=data.get('images', []),
                 vendor=request.user,
                 is_active=data.get('is_active', True)
@@ -124,30 +136,59 @@ def update_product(request, product_id):
         if request.user.role != 'admin' and str(product.vendor.id) != str(request.user.id):
             return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         
-        # Update allowed fields
-        if 'name' in request.data:
-            product.name = request.data['name']
-        if 'description' in request.data:
-            product.description = request.data['description']
-        if 'price' in request.data:
-            product.price = float(request.data['price'])
-        if 'stock_quantity' in request.data:
-            product.stock_quantity = int(request.data['stock_quantity'])
-        if 'category' in request.data:
-            product.category = request.data['category']
-        if 'images' in request.data:
-            product.images = request.data['images']
-        if 'is_active' in request.data:
-            product.is_active = request.data['is_active']
+        serializer = VendorProductSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            data = serializer.validated_data
             
-        product.save()
-        
-        serializer = ProductListSerializer(product)
-        return Response(serializer.data)
+            # Update allowed fields
+            if 'name' in data:
+                product.name = data['name']
+            if 'description' in data:
+                product.description = data['description']
+            if 'price' in data:
+                product.price = float(data['price'])
+            if 'stock_quantity' in data:
+                product.stock_quantity = int(data['stock_quantity'])
+            if 'category' in data:
+                product.category = data['category']
+            if 'product_type' in data:
+                product.product_type = data['product_type']
+            if 'unit_type' in data:
+                product.unit_type = data['unit_type']
+            if 'unit_value' in data:
+                product.unit_value = float(data['unit_value'])
+            if 'expiry_date' in data:
+                product.expiry_date = data['expiry_date']
+            if 'variants' in data:
+                # Need to handle variants correctly for MongoEngine
+                from apps.vendor_admin.models.product_models import ProductVariant
+                product.variants = [ProductVariant(**v) for v in data['variants']]
+            if 'ingredients' in data:
+                product.ingredients = data['ingredients']
+            if 'uses' in data:
+                product.uses = data['uses']
+            if 'dose' in data:
+                product.dose = data['dose']
+            if 'contra_indications' in data:
+                product.contra_indications = data['contra_indications']
+            if 'images' in data:
+                product.images = data['images']
+            if 'is_active' in data:
+                product.is_active = data['is_active']
+                
+            product.save()
+            
+            response_serializer = ProductListSerializer(product)
+            return Response(response_serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
     except Product.DoesNotExist:
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
-    except ValueError:
-        return Response({'error': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])

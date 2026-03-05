@@ -38,6 +38,15 @@ const ProductManagement = () => {
     price: '',
     stock_quantity: 0,
     category: '',
+    product_type: 'Solid',
+    unit_type: 'g',
+    unit_value: '',
+    expiry_date: '',
+    variants: [],
+    ingredients: '',
+    uses: '',
+    dose: '',
+    contra_indications: '',
     is_active: true
   });
   
@@ -62,10 +71,19 @@ const ProductManagement = () => {
       setFormData({
         name: editingProduct.name || '',
         description: editingProduct.description || '',
-        price: editingProduct.price || '',
-        stock_quantity: editingProduct.stock_quantity || 0,
+        price: editingProduct.price !== undefined ? editingProduct.price : '',
+        stock_quantity: editingProduct.stock_quantity !== undefined ? editingProduct.stock_quantity : 0,
         category: editingProduct.category || '',
-        is_active: editingProduct.is_active || true
+        product_type: editingProduct.product_type || 'Solid',
+        unit_type: editingProduct.unit_type || 'g',
+        unit_value: editingProduct.unit_value !== undefined ? editingProduct.unit_value : '',
+        expiry_date: editingProduct.expiry_date ? new Date(editingProduct.expiry_date).toISOString().split('T')[0] : '',
+        variants: editingProduct.variants || [],
+        ingredients: editingProduct.ingredients || '',
+        uses: editingProduct.uses || '',
+        dose: editingProduct.dose || '',
+        contra_indications: editingProduct.contra_indications || '',
+        is_active: editingProduct.is_active !== undefined ? editingProduct.is_active : true
       });
       if (editingProduct.images && editingProduct.images.length > 0) {
         setUploadedImages(editingProduct.images.map(img => ({
@@ -80,6 +98,15 @@ const ProductManagement = () => {
         price: '',
         stock_quantity: 0,
         category: '',
+        product_type: 'Solid',
+        unit_type: 'g',
+        unit_value: '',
+        expiry_date: '',
+        variants: [],
+        ingredients: '',
+        uses: '',
+        dose: '',
+        contra_indications: '',
         is_active: true
       });
       setUploadedImages([]);
@@ -563,24 +590,235 @@ const ProductManagement = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-400 ml-1">Category</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
-                    >
-                      <option value="">Select Category</option>
-                      <option value="Electronics">Electronics</option>
-                      <option value="Fashion">Fashion</option>
-                      <option value="Home">Home & Living</option>
-                      <option value="Beauty">Beauty</option>
-                      <option value="Books">Books</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Category</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
+                      >
+                        <option value="">Select Category</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Home">Home & Living</option>
+                        <option value="Beauty">Beauty</option>
+                        <option value="Books">Books</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Expiry Date</label>
+                      <input
+                        type="date"
+                        value={formData.expiry_date}
+                        onChange={(e) => setFormData({...formData, expiry_date: e.target.value})}
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product Type & Specifications */}
+                  <div className="space-y-6 pt-2">
+                    <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
+                      <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
+                      Product Specifications
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-400 ml-1">Product Type</label>
+                        <select
+                          value={formData.product_type}
+                          onChange={(e) => setFormData({...formData, product_type: e.target.value, unit_type: e.target.value === 'Liquid' ? 'ml' : 'g'})}
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
+                        >
+                          <option value="Solid">Solid (Weight)</option>
+                          <option value="Liquid">Liquid (Volume)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-400 ml-1">Size / Weight Value</label>
+                        <input
+                          type="number"
+                          value={formData.unit_value}
+                          onChange={(e) => setFormData({...formData, unit_value: e.target.value})}
+                          placeholder="e.g. 100, 500, 1"
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-400 ml-1">Unit</label>
+                        <select
+                          value={formData.unit_type}
+                          onChange={(e) => setFormData({...formData, unit_type: e.target.value})}
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
+                        >
+                          {formData.product_type === 'Solid' ? (
+                            <>
+                              <option value="g">Grams (g)</option>
+                              <option value="kg">Kilograms (kg)</option>
+                              <option value="pc">Pieces (pc)</option>
+                              <option value="unit">Unit</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="ml">Milliliters (ml)</option>
+                              <option value="ltr">Liters (ltr)</option>
+                            </>
+                          )}
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Media Section */}
+                {/* Medical & Usage Info Section */}
+                <div className="space-y-6 pt-2">
+                  <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
+                    <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
+                    Medical & Usage Information
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Ingredients</label>
+                      <textarea
+                        value={formData.ingredients}
+                        onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
+                        rows="3"
+                        placeholder="List of ingredients..."
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
+                      ></textarea>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Uses</label>
+                      <textarea
+                        value={formData.uses}
+                        onChange={(e) => setFormData({...formData, uses: e.target.value})}
+                        rows="3"
+                        placeholder="What is it used for?"
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Recommended Dose</label>
+                      <input
+                        type="text"
+                        value={formData.dose}
+                        onChange={(e) => setFormData({...formData, dose: e.target.value})}
+                        placeholder="e.g. 1-2 tablets twice daily"
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 ml-1">Contra-indications</label>
+                      <input
+                        type="text"
+                        value={formData.contra_indications}
+                        onChange={(e) => setFormData({...formData, contra_indications: e.target.value})}
+                        placeholder="e.g. Not for children under 5"
+                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+                  </div>
+
+                  {/* Product Variants Section */}
+                  <div className="space-y-6 pt-4 border-t border-gray-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
+                        <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
+                        Product Variants (Sizes & Prices)
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newVariant = { size: '', price: '', stock: '' };
+                          setFormData({ ...formData, variants: [...formData.variants, newVariant] });
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-xl text-xs font-bold hover:bg-indigo-500 hover:text-white transition-all"
+                      >
+                        <Plus size={14} />
+                        Add Variant
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {formData.variants.map((variant, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-[#0F172A] rounded-2xl border border-gray-800 relative group/variant">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Size (e.g. 100ml)</label>
+                            <input
+                              type="text"
+                              value={variant.size}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index].size = e.target.value;
+                                setFormData({ ...formData, variants: newVariants });
+                              }}
+                              placeholder="100ml"
+                              className="w-full px-4 py-2.5 bg-[#111827] text-[#F9FAFB] border border-gray-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Price (₹)</label>
+                            <input
+                              type="number"
+                              value={variant.price}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index].price = e.target.value;
+                                setFormData({ ...formData, variants: newVariants });
+                              }}
+                              placeholder="299"
+                              className="w-full px-4 py-2.5 bg-[#111827] text-[#F9FAFB] border border-gray-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Stock</label>
+                            <input
+                              type="number"
+                              value={variant.stock}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index].stock = e.target.value;
+                                setFormData({ ...formData, variants: newVariants });
+                              }}
+                              placeholder="50"
+                              className="w-full px-4 py-2.5 bg-[#111827] text-[#F9FAFB] border border-gray-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm"
+                            />
+                          </div>
+                          <div className="flex items-end pb-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newVariants = formData.variants.filter((_, i) => i !== index);
+                                setFormData({ ...formData, variants: newVariants });
+                              }}
+                              className="w-full py-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {formData.variants.length === 0 && (
+                        <div className="text-center py-6 border-2 border-dashed border-gray-800 rounded-2xl">
+                          <p className="text-xs text-gray-500">No variants added. Product will use base price.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Product Visuals */}
                 <div className="space-y-6 pt-2">
                   <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
                     <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
@@ -738,6 +976,26 @@ const ProductManagement = () => {
                         {viewingProduct.stock_quantity} Units
                       </p>
                     </div>
+                    <div className="h-10 w-px bg-gray-800"></div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Size / Weight</p>
+                      <p className="text-xl font-black text-[#F9FAFB]">
+                        {viewingProduct.unit_value} {viewingProduct.unit_type}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-[#0F172A] rounded-2xl border border-gray-800">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Expiry Date</p>
+                      <p className="text-sm font-bold text-[#F9FAFB]">
+                        {viewingProduct.expiry_date ? new Date(viewingProduct.expiry_date).toLocaleDateString() : 'No Expiry'}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-[#0F172A] rounded-2xl border border-gray-800">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Product Type</p>
+                      <p className="text-sm font-bold text-[#F9FAFB]">{viewingProduct.product_type || 'Solid'}</p>
+                    </div>
                   </div>
 
                   <div>
@@ -745,6 +1003,29 @@ const ProductManagement = () => {
                     <p className="text-gray-400 leading-relaxed text-sm">
                       {viewingProduct.description || 'No description provided.'}
                     </p>
+                  </div>
+
+                  {/* Medical Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-t border-gray-800">
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-1">Ingredients</p>
+                      <p className="text-gray-400 text-xs leading-relaxed">{viewingProduct.ingredients || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-1">Uses</p>
+                      <p className="text-gray-400 text-xs leading-relaxed">{viewingProduct.uses || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-gray-800">
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-1">Recommended Dose</p>
+                      <p className="text-gray-400 text-xs">{viewingProduct.dose || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-1">Contra-indications</p>
+                      <p className="text-gray-400 text-xs">{viewingProduct.contra_indications || 'N/A'}</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

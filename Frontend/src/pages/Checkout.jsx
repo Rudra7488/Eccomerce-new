@@ -31,8 +31,39 @@ const Checkout = () => {
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
-    // In real app, we would send formData and cart items to backend
-    console.log('Order placed:', { customer: formData, items: cart.items });
+    // In a real app, we would send formData and cart items to backend
+    // Persist a mock order locally so it shows under "My Orders"
+    try {
+      const orderId = `ORD-${Date.now()}`;
+      const order = {
+        id: orderId,
+        date: new Date().toISOString(),
+        status: 'Placed',
+        items: cart.items.map(i => ({
+          id: i.id,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          totalPrice: i.totalPrice,
+          image: i.image
+        })),
+        totalAmount: cart.totalAmount,
+        customer: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          zipCode: formData.zipCode
+        }
+      };
+      const key = 'orders';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      existing.push(order);
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch (err) {
+      console.error('Failed to save mock order:', err);
+    }
     
     // Clear cart and navigate to success
     dispatch(clearCart());

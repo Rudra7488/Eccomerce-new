@@ -3,119 +3,94 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, CreditCard
 
 const Footer = () => {
   return (
-    <footer className="bg-white pt-16 border-t border-gray-200">
+    <footer className="bg-white pt-16 border-t border-gray-100">
       <div className="container mx-auto px-4 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Column 1: Brand Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-2xl font-bold text-[#003d29]">
-               <div className="relative">
-                 <div className="text-orange-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                 </div>
-                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
-               </div>
-               <span>Shopcart</span>
+          <div className="space-y-6">
+            <div className="flex flex-col items-start group">
+              <span className="text-3xl font-black text-[#006d5b] tracking-tighter">MOZARI</span>
+              <div className="h-1 w-16 bg-[#ff6b3d] rounded-full"></div>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              Your one-stop shop for everything you need. Quality products, best prices, and fast delivery right to your doorstep.
+            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
+              Experience the wellness of nature with MOZARI. Quality products, ancient wisdom, and modern science delivered to your doorstep.
             </p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 text-gray-600 text-sm">
-                <Phone size={16} className="text-[#003d29]" />
-                <span>+1 (555) 123-4567</span>
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-4 text-gray-600 group cursor-pointer">
+                <div className="w-10 h-10 bg-[#e6f1f0] text-[#006d5b] rounded-full flex items-center justify-center group-hover:bg-[#006d5b] group-hover:text-white transition-all">
+                  <Phone size={18} />
+                </div>
+                <span className="text-sm font-bold group-hover:text-[#006d5b] transition-colors">+1 (555) 123-4567</span>
               </div>
-              <div className="flex items-center gap-3 text-gray-600 text-sm">
-                <Mail size={16} className="text-[#003d29]" />
-                <span>support@shopcart.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600 text-sm">
-                <MapPin size={16} className="text-[#003d29]" />
-                <span>123 Commerce St, Market City</span>
+              <div className="flex items-center gap-4 text-gray-600 group cursor-pointer">
+                <div className="w-10 h-10 bg-[#fff3ef] text-[#ff6b3d] rounded-full flex items-center justify-center group-hover:bg-[#ff6b3d] group-hover:text-white transition-all">
+                  <Mail size={18} />
+                </div>
+                <span className="text-sm font-bold group-hover:text-[#ff6b3d] transition-colors">support@mozari.com</span>
               </div>
             </div>
           </div>
 
-          {/* Column 2: Department */}
+          {/* Column 2: Categories */}
           <div>
-            <h3 className="text-lg font-bold text-[#003d29] mb-6">Department</h3>
-            <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Fashion</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Education Product</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Frozen Food</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Beverages</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Organic Grocery</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Office Supplies</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Beauty Products</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Books</a></li>
+            <h3 className="text-lg font-black text-[#006d5b] mb-8 uppercase tracking-widest">Categories</h3>
+            <ul className="space-y-4 text-sm font-bold text-gray-500">
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Pharmaceuticals</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Personal Care</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Baby Care</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Wellness</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Animal Health</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Nutrition</a></li>
             </ul>
           </div>
 
           {/* Column 3: About Us */}
           <div>
-            <h3 className="text-lg font-bold text-[#003d29] mb-6">About Us</h3>
-            <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">About Shopcart</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Careers</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">News & Blog</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Help</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Press Center</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Shop By Location</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Shopcart Brands</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Affiliate & Partners</a></li>
+            <h3 className="text-lg font-black text-[#006d5b] mb-8 uppercase tracking-widest">Company</h3>
+            <ul className="space-y-4 text-sm font-bold text-gray-500">
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Our Story</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Press & Media</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Sustainability</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Find a Store</a></li>
             </ul>
           </div>
 
-          {/* Column 4: Services */}
+          {/* Column 4: Customer Support */}
           <div>
-            <h3 className="text-lg font-bold text-[#003d29] mb-6">Services</h3>
-            <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Gift Card</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Mobile App</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Shipping & Delivery</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Order Pickup</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Account Sign Up</a></li>
-            </ul>
-
-            <h3 className="text-lg font-bold text-[#003d29] mt-8 mb-4">Help</h3>
-             <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Shopcart Help</a></li>
-              <li><a href="#" className="hover:text-[#003d29] hover:underline transition">Returns</a></li>
+            <h3 className="text-lg font-black text-[#006d5b] mb-8 uppercase tracking-widest">Support</h3>
+            <ul className="space-y-4 text-sm font-bold text-gray-500">
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Help Center</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Track Order</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Returns & Refunds</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Shipping Policy</a></li>
+              <li><a href="#" className="hover:text-[#006d5b] transition-colors">Contact Us</a></li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Section: Payments & Socials & Copyright */}
-        <div className="border-t border-gray-200 py-8">
-           <div className="flex flex-col md:flex-row justify-end items-center gap-6">
-             {/* Social Media */}
-             <div className="flex items-center gap-4">
-                 <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#003d29] hover:text-white transition">
-                    <Facebook size={16} />
-                 </a>
-                 <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#003d29] hover:text-white transition">
-                    <Twitter size={16} />
-                 </a>
-                 <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#003d29] hover:text-white transition">
-                    <Instagram size={16} />
-                 </a>
-                 <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#003d29] hover:text-white transition">
-                    <Linkedin size={16} />
-                 </a>
-              </div>
-           </div>
-
-           <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
-              <div className="flex gap-6">
-                 <a href="#" className="hover:text-[#003d29]">Terms of Service</a>
-                 <a href="#" className="hover:text-[#003d29]">Privacy & Policy</a>
-                 <a href="#" className="hover:text-[#003d29]">All Rights Reserved by Shopcart</a>
-                 <a href="#" className="hover:text-[#003d29]">Accessibility</a>
-              </div>
-              <div>
-                 &copy; 2026 Shopcart. All rights reserved.
-              </div>
-           </div>
+        {/* Bottom Section */}
+        <div className="border-t border-gray-100 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest order-2 md:order-1">
+              © 2024 MOZARI Wellness India. All Rights Reserved.
+            </p>
+            
+            <div className="flex items-center gap-4 order-1 md:order-2">
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#006d5b] hover:text-white transition-all duration-300">
+                <Facebook size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#006d5b] hover:text-white transition-all duration-300">
+                <Twitter size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#ff6b3d] hover:text-white transition-all duration-300">
+                <Instagram size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#006d5b] hover:text-white transition-all duration-300">
+                <Linkedin size={18} />
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,6 +1,17 @@
-from mongoengine import Document, StringField, EmailField, DateTimeField
+from mongoengine import Document, StringField, EmailField, DateTimeField, EmbeddedDocument, ListField, EmbeddedDocumentField, BooleanField
 import datetime
 import bcrypt
+import uuid
+
+class Address(EmbeddedDocument):
+    id = StringField(default=lambda: str(uuid.uuid4()), required=True)
+    street = StringField(required=True)
+    city = StringField(required=True)
+    state = StringField(required=True)
+    zip_code = StringField(required=True)
+    country = StringField(required=True)
+    phone = StringField(required=True)
+    is_default = BooleanField(default=False)
 
 class User(Document):
     full_name = StringField(required=True, max_length=255)
@@ -8,6 +19,7 @@ class User(Document):
     password = StringField(required=True)
     role = StringField(default='user', choices=['user', 'admin'])
     created_at = DateTimeField(default=datetime.datetime.utcnow)
+    addresses = ListField(EmbeddedDocumentField(Address))
 
     @property
     def is_authenticated(self):
