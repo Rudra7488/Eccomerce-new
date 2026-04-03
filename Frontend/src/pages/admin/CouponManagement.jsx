@@ -9,7 +9,7 @@ import {
   XCircle,
   Clock,
   Trash2,
-  Edit,
+  Edit2,
   Percent,
   DollarSign,
   Loader2
@@ -19,8 +19,10 @@ import toast from 'react-hot-toast';
 const CouponManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [coupons, setCoupons] = useState([]);
+  const [editingCoupon, setEditingCoupon] = useState(null);
 
   const [newCoupon, setNewCoupon] = useState({
     code: '',
@@ -45,7 +47,9 @@ const CouponManagement = () => {
         const data = await response.json();
         setCoupons(data);
       } else {
-        toast.error('Failed to fetch coupons');
+        const errorMsg = await response.text();
+        console.error('Fetch coupons failed:', response.status, errorMsg);
+        toast.error(`Failed to fetch coupons: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching coupons:', error);
@@ -99,6 +103,52 @@ const CouponManagement = () => {
       }
     } catch (error) {
       console.error('Error adding coupon:', error);
+      toast.error('Error connecting to server');
+    }
+  };
+
+  const handleEditClick = (coupon) => {
+    setEditingCoupon({
+      ...coupon,
+      startDate: new Date(coupon.start_date).toISOString().split('T')[0],
+      endDate: new Date(coupon.end_date).toISOString().split('T')[0]
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCoupon = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/coupons/admin/${editingCoupon.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: editingCoupon.code,
+          discount_type: editingCoupon.discount_type,
+          value: parseFloat(editingCoupon.value),
+          min_purchase: parseFloat(editingCoupon.min_purchase || 0),
+          start_date: editingCoupon.startDate,
+          end_date: editingCoupon.endDate,
+          limit: parseInt(editingCoupon.limit || 0),
+          is_active: editingCoupon.is_active
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Coupon updated successfully');
+        setShowEditModal(false);
+        setEditingCoupon(null);
+        fetchCoupons();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to update coupon');
+      }
+    } catch (error) {
+      console.error('Error updating coupon:', error);
       toast.error('Error connecting to server');
     }
   };
@@ -282,8 +332,11 @@ const CouponManagement = () => {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
-                  <button className="flex-1 py-2.5 bg-gray-50 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                    <Edit size={16} />
+                  <button 
+                    onClick={() => handleEditClick(coupon)}
+                    className="flex-1 py-2.5 bg-gray-50 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Edit2 size={16} />
                     Edit
                   </button>
                   <button 
@@ -413,6 +466,132 @@ const CouponManagement = () => {
               >
                 <Plus size={20} />
                 Create Coupon
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Coupon Modal */}
+      {showEditModal && editingCoupon && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl transform transition-all animate-fadeIn">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Edit Coupon</h2>
+              <button 
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingCoupon(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+              >
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateCoupon} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Coupon Code</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. SUMMER2024"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none uppercase font-bold tracking-wider"
+                  value={editingCoupon.code}
+                  onChange={e => setEditingCoupon({...editingCoupon, code: e.target.value.toUpperCase()})}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Discount Type</label>
+                  <select 
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.discount_type}
+                    onChange={e => setEditingCoupon({...editingCoupon, discount_type: e.target.value})}
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (₹)</option>
+                    <option value="shipping">Free Shipping</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Value</label>
+                  <input 
+                    type="number" 
+                    required
+                    placeholder="20"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.value}
+                    onChange={e => setEditingCoupon({...editingCoupon, value: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Min. Purchase (₹)</label>
+                  <input 
+                    type="number" 
+                    required
+                    placeholder="500"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.min_purchase}
+                    onChange={e => setEditingCoupon({...editingCoupon, min_purchase: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Usage Limit</label>
+                  <input 
+                    type="number" 
+                    required
+                    placeholder="100"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.limit}
+                    onChange={e => setEditingCoupon({...editingCoupon, limit: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Start Date</label>
+                  <input 
+                    type="date" 
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.startDate}
+                    onChange={e => setEditingCoupon({...editingCoupon, startDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">End Date</label>
+                  <input 
+                    type="date" 
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    value={editingCoupon.endDate}
+                    onChange={e => setEditingCoupon({...editingCoupon, endDate: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="edit-is-active"
+                  className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
+                  checked={editingCoupon.is_active}
+                  onChange={e => setEditingCoupon({...editingCoupon, is_active: e.target.checked})}
+                />
+                <label htmlFor="edit-is-active" className="text-sm font-bold text-gray-700">Coupon is Active</label>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2"
+              >
+                <Edit2 size={20} />
+                Update Coupon
               </button>
             </form>
           </div>

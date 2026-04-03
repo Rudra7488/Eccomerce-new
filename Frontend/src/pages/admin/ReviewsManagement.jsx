@@ -8,68 +8,43 @@ const ReviewsManagement = () => {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [ratingFilter, setRatingFilter] = useState('All');
-  const [reviews, setReviews] = useState([
-    {
-      id: 'r1',
-      productId: 'p1',
-      productName: 'Velora Cotton Kurta',
-      productImage: '',
-      reviewer: 'Amit Sharma',
-      email: 'amit@example.com',
-      rating: 5,
-      title: 'Great quality and fit',
-      comment: 'Fabric is soft and comfortable. The fit is perfect and true to size.',
-      date: '2026-02-20',
-      status: 'Approved'
-    },
-    {
-      id: 'r2',
-      productId: 'p2',
-      productName: 'Leather Wallet',
-      productImage: '',
-      reviewer: 'Priya Verma',
-      email: 'priya@example.com',
-      rating: 4,
-      title: 'Good but a bit tight',
-      comment: 'Quality is excellent, but the card slots are a little tight initially.',
-      date: '2026-02-22',
-      status: 'Pending'
-    },
-    {
-      id: 'r3',
-      productId: 'p3',
-      productName: 'Running Shoes X200',
-      productImage: '',
-      reviewer: 'Rohan Gupta',
-      email: 'rohan@example.com',
-      rating: 2,
-      title: 'Not comfortable for long runs',
-      comment: 'Looks great but cushioning is not enough for long distances.',
-      date: '2026-02-24',
-      status: 'Flagged'
-    },
-    {
-      id: 'r4',
-      productId: 'p1',
-      productName: 'Velora Cotton Kurta',
-      productImage: '',
-      reviewer: 'Neha Singh',
-      email: 'neha@example.com',
-      rating: 5,
-      title: 'Excellent value',
-      comment: 'Color is vibrant and material feels premium. Totally worth it.',
-      date: '2026-02-25',
-      status: 'Approved'
-    },
-  ]);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reviews/admin/all/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(data);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchReviews();
+  }, []);
 
   const filtered = useMemo(() => {
     return reviews.filter(r => {
+      const productName = r.product_title || '';
+      const reviewer = r.user_name || '';
+      const comment = r.review_text || '';
       const matchesQuery =
-        r.productName.toLowerCase().includes(query.toLowerCase()) ||
-        r.reviewer.toLowerCase().includes(query.toLowerCase()) ||
-        r.comment.toLowerCase().includes(query.toLowerCase());
-      const matchesStatus = statusFilter === 'All' ? true : r.status === statusFilter;
+        productName.toLowerCase().includes(query.toLowerCase()) ||
+        reviewer.toLowerCase().includes(query.toLowerCase()) ||
+        comment.toLowerCase().includes(query.toLowerCase());
+      const matchesStatus = statusFilter === 'All' ? true : (r.status || 'Approved') === statusFilter;
       const matchesRating = ratingFilter === 'All' ? true : String(r.rating) === String(ratingFilter);
       return matchesQuery && matchesStatus && matchesRating;
     });
@@ -156,16 +131,16 @@ const ReviewsManagement = () => {
             <div key={r.id} className="p-4 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center text-2xl">
-                  {r.productImage ? (
-                    <img src={r.productImage} alt={r.productName} className="w-full h-full object-cover" />
+                  {r.product_image ? (
+                    <img src={r.product_image} alt={r.product_title} className="w-full h-full object-cover" />
                   ) : (
                     '🛍️'
                   )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-gray-900">{r.productName}</h3>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${badgeClass(r.status)}`}>{r.status}</span>
+                    <h3 className="font-bold text-gray-900">{r.product_title}</h3>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${badgeClass(r.status || 'Approved')}`}>{r.status || 'Approved'}</span>
                   </div>
                   <div className="flex items-center gap-1 text-yellow-400 mb-1">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -173,10 +148,9 @@ const ReviewsManagement = () => {
                     ))}
                     <span className="text-xs text-gray-500 ml-2">{r.rating}.0</span>
                   </div>
-                  <div className="text-sm text-gray-700 font-semibold">{r.title}</div>
-                  <p className="text-sm text-gray-500 mt-1 max-w-3xl">{r.comment}</p>
+                  <p className="text-sm text-gray-500 mt-1 max-w-3xl">{r.review_text}</p>
                   <div className="text-xs text-gray-400 mt-2">
-                    by {r.reviewer} • {r.email} • {new Date(r.date).toLocaleDateString()}
+                    by {r.user_name} • {new Date(r.created_at).toLocaleDateString()}
                   </div>
                 </div>
               </div>

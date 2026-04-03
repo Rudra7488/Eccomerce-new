@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { addToCart } from '../store/slices/cartSlice';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
-import { Heart, Star, X, ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, ChevronDown, Check, SlidersHorizontal } from 'lucide-react';
+import { Heart, Star, X, ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, ChevronDown, Check, SlidersHorizontal, Truck, MapPin } from 'lucide-react';
 import { translations } from '../translations';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -11,10 +11,11 @@ import Footer from './Footer';
 const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const currentLang = useSelector((state) => state.language.currentLanguage);
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const t = translations[currentLang];
-  
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +24,11 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [openAccordion, setOpenAccordion] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [pincode, setPincode] = useState('');
+  const [pincodeStatus, setPincodeStatus] = useState(null);
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
 
   // Filter & Sort States
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -31,19 +37,38 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [openFilterAccordion, setOpenFilterAccordion] = useState('CATEGORY');
 
+  // Temporary Filter States (inside drawer)
+  const [tempSortBy, setTempSortBy] = useState('price-low-high');
+  const [tempCategory, setTempCategory] = useState(propCategory || 'All');
+  const [tempPriceRange, setTempPriceRange] = useState([0, 5000]);
+
+  // Sync temp states when drawer opens
+  useEffect(() => {
+    if (showFilterDrawer) {
+      setTempSortBy(sortBy);
+      setTempCategory(selectedCategory);
+      setTempPriceRange(priceRange);
+    }
+  }, [showFilterDrawer, sortBy, selectedCategory, priceRange]);
+
   // Update internal category state when prop changes
   useEffect(() => {
-    if (propCategory) setSelectedCategory(propCategory);
-  }, [propCategory]);
+    if (propCategory) {
+      setSelectedCategory(propCategory);
+    } else if (propCategory === null) {
+      // If we're on the home page root with no query params (Home button scenario)
+      if (location.pathname === '/' && !location.search) {
+        setSortBy('price-low-high');
+        setSelectedCategory('All');
+        setPriceRange([0, 5000]);
 
-  // Mock Reviews Data
-  const mockReviews = [
-    { id: 1, user: 'Rengasamy Ra...', location: 'SUBRAMANIA NAGAR SALEM, TN', rating: 4, comment: 'Pretty guse it for peaceful sleep. Found it to be usefulood!', date: '1 WEEK AGO' },
-    { id: 2, user: 'L P', location: 'BENGALURU, KA', rating: 5, comment: 'Fantastic!', date: '1 WEEK AGO' },
-    { id: 3, user: 'K kantharaju', location: '', rating: 5, comment: 'Good stress. Very good product', date: '3 WEEKS AGO' },
-    { id: 4, user: 'Hemant Kumar...', location: 'SECUNDERABAD, TELANGANA', rating: 5, comment: '', date: '3 WEEKS AGO' },
-    { id: 5, user: 'shashank Shek...', location: 'DEHRADUN, UT', rating: 1, comment: '', date: '1 MONTH AGO' }
-  ];
+        setTempSortBy('price-low-high');
+        setTempCategory('All');
+        setTempPriceRange([0, 5000]);
+      }
+    }
+  }, [propCategory, location.pathname, location.search, location.key]);
+
 
   useEffect(() => {
     fetchProducts();
@@ -54,8 +79,39 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
     if (selectedProduct) {
       setActiveImageIndex(0);
       setSelectedVariant(selectedProduct.variants?.[0] || null);
+      fetchReviews(selectedProduct.id);
+      setPincode('');
+      setPincodeStatus(null);
     }
   }, [selectedProduct]);
+
+  const fetchReviews = async (productId) => {
+    try {
+      setReviewsLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reviews/product/${productId}/`);
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(data);
+      }
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleCheckPincode = async () => {
+    if (pincode.length !== 6) {
+      setPincodeStatus('invalid');
+      return;
+    }
+    setIsCheckingPincode(true);
+    // Mocking an API call
+    setTimeout(() => {
+      setIsCheckingPincode(false);
+      setPincodeStatus('valid');
+    }, 800);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -78,7 +134,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
     const imageToUse = specificImage || product.images?.[0] || '📦';
     const priceToUse = variant ? variant.price : product.price;
     const titleToUse = variant ? `${product.name} (${variant.size})` : product.name;
-    
+
     // Format product to match the expected cart structure
     const cartProduct = {
       id: variant ? `${product.id}_${variant.size}` : product.id,
@@ -106,22 +162,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
     return wishlistItems.some((item) => item.id === id);
   };
 
-  const handleBuyNow = (product, specificImage = null, variant = null) => {
-    const imageToUse = specificImage || product.images?.[0] || '📦';
-    const priceToUse = variant ? variant.price : product.price;
-    const titleToUse = variant ? `${product.name} (${variant.size})` : product.name;
-
-    const cartProduct = {
-      id: variant ? `${product.id}_${variant.size}` : product.id,
-      title: titleToUse,
-      price: priceToUse,
-      description: product.description,
-      image: imageToUse,
-      quantity: 1,
-    };
-    dispatch(addToCart(cartProduct));
-    navigate('/checkout');
-  };
+ 
 
   const getMinPrice = (product) => {
     if (product.variants && product.variants.length > 0) {
@@ -132,19 +173,20 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
   const filteredProducts = products.filter(product => {
     const productPrice = getMinPrice(product);
-    const matchesCategory = selectedCategory && selectedCategory !== 'All' 
-      ? product.category === selectedCategory 
+    const matchesCategory = selectedCategory && selectedCategory !== 'All'
+      ? product.category === selectedCategory
       : true;
-      
+
     const matchesSearch = searchQuery
       ? (product.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (product.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (product.category?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+      (product.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (product.category?.toLowerCase() || '').includes(searchQuery.toLowerCase())
       : true;
 
     const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
+    const isAvailable = product.stock_quantity > 0;
 
-    return matchesCategory && matchesSearch && matchesPrice;
+    return matchesCategory && matchesSearch && matchesPrice && isAvailable;
   }).sort((a, b) => {
     if (sortBy === 'price-low-high') return getMinPrice(a) - getMinPrice(b);
     if (sortBy === 'price-high-low') return getMinPrice(b) - getMinPrice(a);
@@ -167,7 +209,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
       <div className="py-8 px-4 sm:px-8 bg-white" id="products-section">
         <div className="text-center text-red-500 py-8">
           <p>Error loading products: {error}</p>
-          <button 
+          <button
             onClick={fetchProducts}
             className="mt-4 px-4 py-2 bg-[#006d5b] text-white rounded hover:bg-[#005c4b] transition"
           >
@@ -178,9 +220,9 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
     );
   }
 
-  const categories = ['All', ...new Set(products.map(p => p.category).filter(cat => 
-    cat && 
-    cat.length > 2 && 
+  const categories = ['All', ...new Set(products.map(p => p.category).filter(cat =>
+    cat &&
+    cat.length > 2 &&
     !['hgcdhs', 'fv', 'hcdc'].includes(cat.toLowerCase())
   ))];
 
@@ -188,7 +230,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
     <div className="py-8 px-4 sm:px-8 bg-white" id="products-section">
       {/* Filter Drawer Overlay */}
       {showFilterDrawer && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/40 z-[150] transition-opacity duration-300"
           onClick={() => setShowFilterDrawer(false)}
         />
@@ -206,7 +248,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
         <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
           {/* CATEGORY Accordion */}
           <div className="border-b border-gray-100 pb-4">
-            <button 
+            <button
               onClick={() => setOpenFilterAccordion(openFilterAccordion === 'CATEGORY' ? null : 'CATEGORY')}
               className="w-full flex items-center justify-between py-4 group"
             >
@@ -218,8 +260,8 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`block w-full text-left py-1 text-sm font-bold transition-all ${selectedCategory === cat ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
+                    onClick={() => setTempCategory(cat)}
+                    className={`block w-full text-left py-1 text-sm font-bold transition-all ${tempCategory === cat ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
                   >
                     {cat}
                   </button>
@@ -230,7 +272,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
           {/* PRICE Accordion (Sorting) */}
           <div className="border-b border-gray-100 pb-4">
-            <button 
+            <button
               onClick={() => setOpenFilterAccordion(openFilterAccordion === 'PRICE' ? null : 'PRICE')}
               className="w-full flex items-center justify-between py-4 group"
             >
@@ -240,20 +282,20 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
             {openFilterAccordion === 'PRICE' && (
               <div className="space-y-3 pl-2 animate-in slide-in-from-top-2 duration-300">
                 <button
-                  onClick={() => setSortBy('price-low-high')}
-                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${sortBy === 'price-low-high' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
+                  onClick={() => setTempSortBy('price-low-high')}
+                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${tempSortBy === 'price-low-high' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
                 >
                   Price, low to high
                 </button>
                 <button
-                  onClick={() => setSortBy('price-high-low')}
-                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${sortBy === 'price-high-low' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
+                  onClick={() => setTempSortBy('price-high-low')}
+                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${tempSortBy === 'price-high-low' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
                 >
                   Price, high to low
                 </button>
                 <button
-                  onClick={() => setSortBy('newest')}
-                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${sortBy === 'newest' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
+                  onClick={() => setTempSortBy('newest')}
+                  className={`block w-full text-left py-1 text-sm font-bold transition-all ${tempSortBy === 'newest' ? 'text-[#006d5b] translate-x-2' : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'}`}
                 >
                   Newest first
                 </button>
@@ -265,34 +307,61 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
           <div className="pt-4">
             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Price Range Limit</h3>
             <div className="space-y-4">
-              <input 
-                type="range" 
-                min="0" 
-                max="5000" 
+              <input
+                type="range"
+                min="0"
+                max="5000"
                 step="50"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                value={tempPriceRange[1]}
+                onChange={(e) => setTempPriceRange([0, parseInt(e.target.value)])}
                 className="w-full accent-[#006d5b]"
               />
               <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 <span>₹0</span>
-                <span>₹{priceRange[1]}</span>
+                <span>₹{tempPriceRange[1]}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <button 
-          onClick={() => setShowFilterDrawer(false)}
-          className="mt-auto w-full py-4 bg-[#006d5b] text-white font-black uppercase tracking-widest rounded-md active:scale-95 transition-transform"
-        >
-          Apply Filters
-        </button>
+        <div className="mt-auto space-y-4">
+          <button
+            onClick={() => {
+              setSortBy(tempSortBy);
+              setSelectedCategory(tempCategory);
+              setPriceRange(tempPriceRange);
+              setShowFilterDrawer(false);
+            }}
+            className="w-full py-4 bg-[#006d5b] text-white font-black uppercase tracking-widest rounded-md active:scale-95 transition-transform"
+          >
+            Apply Filters
+          </button>
+
+          <button
+            onClick={() => {
+              const defaultSortBy = 'price-low-high';
+              const defaultCategory = 'All';
+              const defaultPriceRange = [0, 5000];
+
+              setTempSortBy(defaultSortBy);
+              setTempCategory(defaultCategory);
+              setTempPriceRange(defaultPriceRange);
+
+              setSortBy(defaultSortBy);
+              setSelectedCategory(defaultCategory);
+              setPriceRange(defaultPriceRange);
+              setShowFilterDrawer(false);
+            }}
+            className="w-full py-3 border border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Clear All
+          </button>
+        </div>
       </div>
 
       {/* Top Controls Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 py-6 border-y border-gray-100">
-        <button 
+        <button
           onClick={() => setShowFilterDrawer(true)}
           className="flex items-center gap-2 px-6 py-2.5 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors font-bold text-sm text-gray-600 group"
         >
@@ -308,92 +377,71 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-20 px-2">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-12 gap-y-10 sm:gap-y-20 px-1 sm:px-2">
         {filteredProducts.map((product) => {
           const minPrice = getMinPrice(product);
-          const isSoldOut = product.stock_quantity === 0;
-
           return (
-            <div key={product.id} className="group flex flex-col h-full animate-in fade-in duration-500 bg-white p-4 rounded-3xl border border-transparent hover:border-gray-100 transition-all duration-300">
+            <div key={product.id} className="group flex flex-col h-full animate-in fade-in duration-500 bg-white p-2 sm:p-4 rounded-2xl sm:rounded-3xl border border-transparent hover:border-gray-100 transition-all duration-300">
               {/* Image Container */}
-              <div 
-                className="aspect-square bg-[#f9fafb] rounded-2xl mb-8 flex items-center justify-center p-10 relative cursor-pointer overflow-hidden border border-gray-200 group-hover:border-teal-500/20 group-hover:shadow-xl transition-all duration-500"
+              <div
+                className="aspect-square bg-[#f9fafb] rounded-xl sm:rounded-2xl mb-3 sm:mb-8 flex items-center justify-center p-4 sm:p-10 relative cursor-pointer overflow-hidden border border-gray-200 group-hover:border-teal-500/20 group-hover:shadow-xl transition-all duration-500"
                 onClick={() => setSelectedProduct(product)}
               >
                 {product.discount && (
-                  <div className="absolute top-5 left-5 bg-orange-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-md z-10 uppercase tracking-widest shadow-sm">
+                  <div className="absolute top-2 sm:top-5 left-2 sm:left-5 bg-orange-500 text-white text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-md z-10 uppercase tracking-widest shadow-sm">
                     -{product.discount}%
                   </div>
                 )}
-                
+
                 {/* Wishlist Button - Top Right (Visible on hover or if in wishlist) */}
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleToggleWishlist(product);
                   }}
-                  className={`absolute top-5 right-5 p-2.5 bg-white rounded-full shadow-lg transition-all z-20 ${
-                    isItemInWishlist(product.id) 
-                      ? 'text-red-500 scale-110 opacity-100' 
-                      : 'text-gray-300 hover:text-red-500 hover:scale-110 md:opacity-0 md:group-hover:opacity-100'
-                  }`}
+                  className={`absolute top-2 sm:top-5 right-2 sm:right-5 p-1.5 sm:p-2.5 bg-white rounded-full shadow-lg transition-all z-20 ${isItemInWishlist(product.id)
+                    ? 'text-red-500 scale-110 opacity-100'
+                    : 'text-gray-300 hover:text-red-500 hover:scale-110 md:opacity-0 md:group-hover:opacity-100'
+                    }`}
                 >
-                  <Heart size={20} className={isItemInWishlist(product.id) ? 'fill-current' : ''} />
+                  <Heart size={16} className={isItemInWishlist(product.id) ? 'fill-current' : ''} />
                 </button>
 
-                {isSoldOut && (
-                  <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10">
-                    <span className="bg-white/90 text-gray-400 text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-[0.2em] shadow-sm border border-gray-100">
-                      Sold Out
-                    </span>
-                  </div>
-                )}
-                
-                <img 
-                  src={product.images?.[0] || '📦'} 
-                  alt={product.name} 
-                  className={`w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 ${isSoldOut ? 'grayscale' : ''}`} 
+
+
+                <img
+                  src={product.images?.[0] || '📦'}
+                  alt={product.name}
+                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
 
               {/* Product Info */}
-              <div className="flex flex-col flex-1 space-y-3 px-1">
+              <div className="flex flex-col flex-1 space-y-2 sm:space-y-3 px-1">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-gray-800 line-clamp-2 min-h-[2.5rem] group-hover:text-[#006d5b] transition-colors cursor-pointer leading-relaxed" onClick={() => setSelectedProduct(product)}>
+                  <h3 className="text-[11px] sm:text-sm font-bold text-gray-800 line-clamp-2 min-h-[2.5rem] group-hover:text-[#006d5b] transition-colors cursor-pointer leading-tight sm:leading-relaxed" onClick={() => setSelectedProduct(product)}>
                     {product.name}
                   </h3>
-                  
+
                   <div className="flex flex-col">
-                    <span className="text-base font-black text-gray-900">
+                    <span className="text-xs sm:text-base font-black text-gray-900">
                       {product.variants?.length > 0 ? 'from ' : ''}₹{minPrice.toLocaleString()}
                     </span>
                     {product.discount && (
-                      <span className="text-xs text-gray-300 line-through font-bold">₹{Math.round(minPrice * 1.2).toLocaleString()}</span>
+                      <span className="text-[10px] sm:text-xs text-gray-300 line-through font-bold">₹{Math.round(minPrice * 1.2).toLocaleString()}</span>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-4 flex flex-col gap-2">
-                  <button 
-                    disabled={isSoldOut}
+                <div className="pt-2 sm:pt-4 flex flex-col gap-2">
+                  <button
                     onClick={() => handleAddToCart(product)}
-                    className={`w-full py-3 rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none font-black text-[11px] uppercase tracking-[0.2em] transition-all ${
-                      isSoldOut 
-                        ? 'bg-[#004d44] text-white/50 cursor-not-allowed' 
-                        : 'bg-[#006d5b] text-white hover:bg-[#005c4b] active:scale-[0.98]'
-                    }`}
+                    className="w-full py-2 sm:py-3 rounded-tl-[15px] sm:rounded-tl-[30px] rounded-br-[15px] sm:rounded-br-[30px] rounded-tr-none rounded-bl-none font-black text-[8px] sm:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all bg-[#006d5b] text-white hover:bg-[#005c4b] active:scale-[0.98]"
                   >
-                    {isSoldOut ? 'SOLD OUT' : 'ADD TO CART'}
+                    ADD TO CART
                   </button>
+
                   
-                  {!isSoldOut && (
-                    <button 
-                      onClick={() => handleBuyNow(product)}
-                      className="w-full py-3 rounded-md border-2 border-[#006d5b] text-[#006d5b] font-black text-[11px] uppercase tracking-[0.1em] hover:bg-[#006d5b]/5 transition-all active:scale-[0.98]"
-                    >
-                      BUY IT NOW
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
@@ -410,13 +458,13 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
           </div>
 
           {/* Modal Content Scrollable Area */}
-          <div 
+          <div
             className="flex-1 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
               {/* Breadcrumbs / Back button */}
-              <button 
+              <button
                 onClick={() => setSelectedProduct(null)}
                 className="flex items-center gap-2 text-gray-400 hover:text-gray-900 font-bold text-sm mb-8 transition-colors group"
               >
@@ -433,9 +481,8 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`w-20 h-20 rounded-lg border-2 transition-all overflow-hidden bg-gray-50 flex items-center justify-center p-2 ${
-                          activeImageIndex === idx ? 'border-[#006d5b] shadow-md' : 'border-gray-100 hover:border-gray-200'
-                        }`}
+                        className={`w-20 h-20 rounded-lg border-2 transition-all overflow-hidden bg-gray-50 flex items-center justify-center p-2 ${activeImageIndex === idx ? 'border-[#006d5b] shadow-md' : 'border-gray-100 hover:border-gray-200'
+                          }`}
                       >
                         <img src={img} alt="" className="w-full h-full object-contain" />
                       </button>
@@ -445,24 +492,24 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                   {/* Main Image View */}
                   <div className="flex-1 bg-white rounded-2xl overflow-hidden flex items-center justify-center relative group min-h-[400px] md:min-h-[600px] border border-gray-50">
                     {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                      <img 
-                        src={selectedProduct.images[activeImageIndex]} 
-                        alt={selectedProduct.name} 
-                        className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105" 
+                      <img
+                        src={selectedProduct.images[activeImageIndex]}
+                        alt={selectedProduct.name}
+                        className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
                       <div className="text-9xl">📦</div>
                     )}
-                    
+
                     {/* Mobile Navigation Arrows */}
                     <div className="md:hidden">
-                      <button 
+                      <button
                         onClick={() => setActiveImageIndex(prev => prev === 0 ? selectedProduct.images.length - 1 : prev - 1)}
                         className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
                       >
                         <ChevronLeft size={20} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => setActiveImageIndex(prev => prev === selectedProduct.images.length - 1 ? 0 : prev + 1)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
                       >
@@ -506,11 +553,10 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                           <button
                             key={idx}
                             onClick={() => setSelectedVariant(variant)}
-                            className={`flex flex-col items-center justify-center px-6 py-3 rounded-md border-2 transition-all min-w-[120px] ${
-                              selectedVariant?.size === variant.size
-                                ? 'border-[#006d5b] bg-[#006d5b]/5'
-                                : 'border-gray-100 hover:border-gray-200'
-                            }`}
+                            className={`flex flex-col items-center justify-center px-6 py-3 rounded-md border-2 transition-all min-w-[120px] ${selectedVariant?.size === variant.size
+                              ? 'border-[#006d5b] bg-[#006d5b]/5'
+                              : 'border-gray-100 hover:border-gray-200'
+                              }`}
                           >
                             <div className={`text-xs font-black uppercase mb-1 ${selectedVariant?.size === variant.size ? 'text-[#006d5b]' : 'text-gray-400'}`}>
                               {variant.size}
@@ -534,7 +580,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                     <div className="space-y-3">
                       <p className="text-gray-400 font-black text-[10px] uppercase tracking-widest">QUANTITY</p>
                       <div className="flex items-center w-32 border-2 border-gray-100 rounded-md overflow-hidden h-12">
-                        <button 
+                        <button
                           onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                           className="flex-1 flex items-center justify-center hover:bg-gray-50 text-gray-500 transition-colors"
                         >
@@ -543,7 +589,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                         <div className="flex-1 flex items-center justify-center font-bold text-gray-900">
                           {quantity}
                         </div>
-                        <button 
+                        <button
                           onClick={() => setQuantity(prev => prev + 1)}
                           className="flex-1 flex items-center justify-center hover:bg-gray-50 text-gray-500 transition-colors"
                         >
@@ -553,28 +599,63 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                     </div>
 
                     <div className="space-y-4">
-                      {/* Subscription Option Mock */}
-                      <div className="border-2 border-gray-50 rounded-lg overflow-hidden">
-                        <label className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-50">
-                          <input type="radio" name="purchase_type" defaultChecked className="accent-[#006d5b] w-4 h-4" />
-                          <span className="text-sm font-black uppercase text-gray-900 tracking-tight">ONE TIME PURCHASE</span>
-                        </label>
-                        <label className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors opacity-50">
-                          <input type="radio" name="purchase_type" className="accent-[#006d5b] w-4 h-4" />
-                          <div className="flex-1">
-                            <span className="text-sm font-black uppercase text-gray-900 tracking-tight">SUBSCRIBE AND DELIVER EVERY</span>
-                            <div className="inline-block ml-4 px-3 py-1 border rounded text-xs">15 days</div>
-                          </div>
-                        </label>
-                      </div>
-
-                      <button 
+                      <button
                         onClick={() => handleAddToCart(selectedProduct, selectedProduct.images[activeImageIndex], selectedVariant)}
                         className="w-full py-5 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-900/10 active:scale-[0.98]"
                       >
                         <ShoppingCart size={20} />
                         ADD TO CART
                       </button>
+                    </div>
+
+                    {/* Delivery Options */}
+                    <div className="pt-6 border-t border-gray-50">
+                      <div className="flex items-center gap-2 mb-4 text-[#006d5b]">
+                        <Truck size={20} className="stroke-[2.5]" />
+                        <span className="text-xs font-black uppercase tracking-widest">Delivery options</span>
+                      </div>
+                      
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#006d5b] transition-colors">
+                          <MapPin size={18} />
+                        </div>
+                        <input
+                          type="text"
+                          maxLength="6"
+                          placeholder="Enter Pincode"
+                          value={pincode}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            setPincode(val);
+                            setPincodeStatus(null);
+                          }}
+                          className="w-full pl-12 pr-24 py-4 bg-gray-50 border-2 border-transparent focus:border-[#006d5b] focus:bg-white rounded-xl outline-none transition-all font-bold text-gray-900 placeholder:text-gray-300"
+                        />
+                        <button
+                          onClick={handleCheckPincode}
+                          disabled={isCheckingPincode || pincode.length !== 6}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-gray-900 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all disabled:bg-gray-200 disabled:text-gray-400"
+                        >
+                          {isCheckingPincode ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'CHECK'}
+                        </button>
+                      </div>
+
+                      {pincodeStatus === 'valid' && (
+                        <p className="mt-3 text-[10px] font-black text-[#006d5b] uppercase tracking-widest flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                          <Check size={14} />
+                          Delivery available at {pincode}
+                        </p>
+                      )}
+                      {pincodeStatus === 'invalid' && (
+                        <p className="mt-3 text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                          <X size={14} />
+                          Invalid pincode. Please try again.
+                        </p>
+                      )}
+                      
+                      <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                        Please enter PIN code to check delivery time & Pay on Delivery availability.
+                      </p>
                     </div>
                   </div>
 
@@ -607,7 +688,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                       ].map((section, idx) => (
                         section.content && (
                           <div key={idx} className="border-b border-gray-100">
-                            <button 
+                            <button
                               onClick={() => setOpenAccordion(openAccordion === idx ? null : idx)}
                               className="w-full py-6 flex items-center justify-between group"
                             >
@@ -629,11 +710,11 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
               {/* "You may also like" Section */}
               <div className="mb-32">
-                <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">You may also like</h2>
+                <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Similar Products</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
-                  {products.filter(p => p.id !== selectedProduct.id && p.category === selectedProduct.category).slice(0, 5).map((product) => (
+                  {products.filter(p => p.id !== selectedProduct.id && p.category === selectedProduct.category && p.stock_quantity > 0).slice(0, 5).map((product) => (
                     <div key={product.id} className="group flex flex-col h-full bg-white rounded-xl border border-transparent hover:border-gray-100 transition-all p-4">
-                      <div 
+                      <div
                         className="aspect-square bg-white mb-6 flex items-center justify-center cursor-pointer group-hover:scale-105 transition-transform duration-500"
                         onClick={() => setSelectedProduct(product)}
                       >
@@ -641,7 +722,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                       </div>
                       <h3 className="text-sm font-black text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                       <p className="text-sm font-bold text-gray-900 mb-6">₹{product.price}</p>
-                      <button 
+                      <button
                         onClick={() => handleAddToCart(product)}
                         className="w-full py-3 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none text-xs font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all"
                       >
@@ -660,42 +741,65 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                     <button className="text-xs font-black text-gray-400 hover:text-gray-900 underline tracking-widest uppercase">Write a review</button>
                   </div>
                   <div className="flex items-center gap-8">
-                    <span className="text-7xl font-black text-gray-900">4.6</span>
+                    <span className="text-7xl font-black text-gray-900">
+                      {reviews.length > 0
+                        ? (reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length).toFixed(1)
+                        : '0.0'
+                      }
+                    </span>
                     <div className="space-y-1">
                       <div className="flex text-orange-500">
-                        {[...Array(5)].map((_, i) => <Star key={i} size={20} className="fill-current" />)}
+                        {[...Array(5)].map((_, i) => {
+                          const avgRating = reviews.length > 0
+                            ? reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length
+                            : 0;
+                          return <Star key={i} size={20} className={i < Math.round(avgRating) ? "fill-current" : "text-gray-200"} />;
+                        })}
                       </div>
-                      <p className="text-xs font-bold text-gray-400 tracking-widest">64 REVIEWS</p>
+                      <p className="text-xs font-bold text-gray-400 tracking-widest uppercase">{reviews.length} REVIEWS</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-12 border-t border-gray-100">
-                  {mockReviews.map((review) => (
-                    <div key={review.id} className="pt-12 flex flex-col md:flex-row gap-8 md:gap-24 group">
-                      <div className="md:w-64 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center text-[#006d5b] font-black">
-                          {review.user.charAt(0)}
-                        </div>
-                        <div>
-                          <h4 className="font-black text-gray-900 text-sm flex items-center gap-2">
-                            {review.user}
-                            <Check size={14} className="bg-[#006d5b] text-white rounded-full p-0.5" />
-                          </h4>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{review.location}</p>
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex text-orange-500">
-                            {[...Array(5)].map((_, i) => <Star key={i} size={14} className={i < review.rating ? "fill-current" : "text-gray-200"} />)}
-                          </div>
-                          <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{review.date}</span>
-                        </div>
-                        <p className="text-gray-600 font-bold leading-relaxed">{review.comment || 'Good product.'}</p>
-                      </div>
+                  {reviewsLoading ? (
+                    <div className="py-12 flex justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#006d5b]"></div>
                     </div>
-                  ))}
+                  ) : reviews.length === 0 ? (
+                    <div className="py-20 text-center">
+                      <p className="text-gray-500 font-bold">No reviews yet for this product.</p>
+                      <p className="text-sm text-gray-400 mt-2 tracking-wide uppercase">Be the first to share your thoughts!</p>
+                    </div>
+                  ) : (
+                    reviews.map((review, idx) => (
+                      <div key={idx} className="pt-12 flex flex-col md:flex-row gap-8 md:gap-24 group">
+                        <div className="md:w-64 flex items-center gap-4">
+                          <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center text-[#006d5b] font-black">
+                            {review.user_name?.charAt(0) || 'A'}
+                          </div>
+                          <div>
+                            <h4 className="font-black text-gray-900 text-sm flex items-center gap-2">
+                              {review.user_name}
+                              <Check size={14} className="bg-[#006d5b] text-white rounded-full p-0.5" />
+                            </h4>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Verified Buyer</p>
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex text-orange-500">
+                              {[...Array(5)].map((_, i) => <Star key={i} size={14} className={i < review.rating ? "fill-current" : "text-gray-200"} />)}
+                            </div>
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">
+                              {new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-gray-600 font-bold leading-relaxed">{review.review_text || 'Good product.'}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
                 <div className="mt-20 text-center">
@@ -705,7 +809,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                 </div>
               </div>
             </div>
-            
+
             {/* Footer Integration */}
             <Footer />
           </div>

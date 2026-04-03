@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -20,6 +20,13 @@ const Home = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  // Reset category when navigating to home (base URL)
+  useEffect(() => {
+    if (location.pathname === '/' && !location.search) {
+      setSelectedCategory(null);
+    }
+  }, [location.pathname, location.search]);
 
   return (
     <div className="min-h-screen bg-white font-sans">

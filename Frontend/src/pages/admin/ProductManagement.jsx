@@ -36,7 +36,7 @@ const ProductManagement = () => {
     name: '',
     description: '',
     price: '',
-    stock_quantity: 0,
+    stock_quantity: '',
     category: '',
     product_type: 'Solid',
     unit_type: 'g',
@@ -72,7 +72,7 @@ const ProductManagement = () => {
         name: editingProduct.name || '',
         description: editingProduct.description || '',
         price: editingProduct.price !== undefined ? editingProduct.price : '',
-        stock_quantity: editingProduct.stock_quantity !== undefined ? editingProduct.stock_quantity : 0,
+        stock_quantity: editingProduct.stock_quantity !== undefined ? editingProduct.stock_quantity : '',
         category: editingProduct.category || '',
         product_type: editingProduct.product_type || 'Solid',
         unit_type: editingProduct.unit_type || 'g',
@@ -96,7 +96,7 @@ const ProductManagement = () => {
         name: '',
         description: '',
         price: '',
-        stock_quantity: 0,
+        stock_quantity: '',
         category: '',
         product_type: 'Solid',
         unit_type: 'g',
@@ -287,8 +287,26 @@ const ProductManagement = () => {
     const loadingToast = toast.loading('Creating product...');
     try {
       const imageUrls = uploadedImages.map(image => image.url);
-      const productData = { ...formData, images: imageUrls };
-      const token = localStorage.getItem('accessToken');
+      
+      // Ensure correct data types
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price) || 0,
+        stock_quantity: parseInt(formData.stock_quantity) || 0,
+        category: formData.category,
+        images: imageUrls,
+        is_active: formData.is_active
+      };
+      
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        toast.error('Authentication token not found');
+        return;
+      }
+      
+      console.log('Creating product with data:', productData);
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vendor-admin/products/create/`, {
         method: 'POST',
@@ -299,15 +317,20 @@ const ProductManagement = () => {
         body: JSON.stringify(productData)
       });
       
+      const responseData = await response.json();
+      console.log('Backend response:', responseData);
+      
       if (response.ok) {
         setShowForm(false);
         fetchProducts();
         toast.success('Product created successfully!', { id: loadingToast });
       } else {
-        toast.error('Failed to create product', { id: loadingToast });
+        console.error('Creation failed:', response.status, responseData);
+        toast.error(`Failed to create product: ${responseData.message || responseData.error || 'Unknown error'}`, { id: loadingToast });
       }
     } catch (error) {
-      toast.error('An error occurred', { id: loadingToast });
+      console.error('Error creating product:', error);
+      toast.error('An error occurred while creating the product', { id: loadingToast });
     }
   };
 
@@ -315,8 +338,26 @@ const ProductManagement = () => {
     const loadingToast = toast.loading('Updating product...');
     try {
       const imageUrls = uploadedImages.map(image => image.url);
-      const productData = { ...formData, images: imageUrls };
-      const token = localStorage.getItem('accessToken');
+      
+      // Ensure correct data types
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price) || 0,
+        stock_quantity: parseInt(formData.stock_quantity) || 0,
+        category: formData.category,
+        images: imageUrls,
+        is_active: formData.is_active
+      };
+      
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        toast.error('Authentication token not found');
+        return;
+      }
+      
+      console.log('Updating product with data:', productData);
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vendor-admin/products/${editingProduct.id}/update/`, {
         method: 'PUT',
@@ -327,15 +368,20 @@ const ProductManagement = () => {
         body: JSON.stringify(productData)
       });
       
+      const responseData = await response.json();
+      console.log('Backend response:', responseData);
+      
       if (response.ok) {
         setShowForm(false);
         fetchProducts();
         toast.success('Product updated successfully!', { id: loadingToast });
       } else {
-        toast.error('Failed to update product', { id: loadingToast });
+        console.error('Update failed:', response.status, responseData);
+        toast.error(`Failed to update product: ${responseData.message || responseData.error || 'Unknown error'}`, { id: loadingToast });
       }
     } catch (error) {
-      toast.error('An error occurred', { id: loadingToast });
+      console.error('Error updating product:', error);
+      toast.error('An error occurred while updating the product', { id: loadingToast });
     }
   };
 
@@ -570,7 +616,7 @@ const ProductManagement = () => {
                         <input
                           type="number"
                           value={formData.price}
-                          onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                          onChange={(e) => setFormData({...formData, price: e.target.value})}
                           className="w-full pl-12 pr-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                         />
                       </div>
@@ -583,7 +629,7 @@ const ProductManagement = () => {
                         <input
                           type="number"
                           value={formData.stock_quantity}
-                          onChange={(e) => setFormData({...formData, stock_quantity: parseInt(e.target.value) || 0})}
+                          onChange={(e) => setFormData({...formData, stock_quantity: e.target.value})}
                           className="w-full pl-12 pr-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                         />
                       </div>
@@ -1087,6 +1133,15 @@ const ProductManagement = () => {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #475569;
+        }
+        /* Hide spin buttons for number inputs */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
         }
       `}} />
     </AdminLayout>

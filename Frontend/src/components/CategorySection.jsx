@@ -3,12 +3,12 @@ import { useSelector } from 'react-redux';
 import { translations } from '../translations';
 
 const categories = [
-  { name: 'Pharmaceuticals', color: 'bg-[#e6f1f0]', textColor: 'text-[#006d5b]', icon: '💊' },
-  { name: 'Personal Care', color: 'bg-[#fff3ef]', textColor: 'text-[#ff6b3d]', icon: '🧴' },
-  { name: 'Baby Care', color: 'bg-[#f3f0ff]', textColor: 'text-[#7c3aed]', icon: '👶' },
-  { name: 'Wellness', color: 'bg-[#fff7ed]', textColor: 'text-[#ea580c]', icon: '🧘' },
-  { name: 'Animal Health', color: 'bg-[#f0fdf4]', textColor: 'text-[#16a34a]', icon: '🐕' },
-  { name: 'Moms', color: 'bg-[#fdf2f8]', textColor: 'text-[#db2777]', icon: '🤱' },
+  { name: 'Ayurveda', color: 'bg-[#e6f1f0]', textColor: 'text-[#006d5b]', icon: '🌿' },
+  { name: 'Herbal Care', color: 'bg-[#fff3ef]', textColor: 'text-[#ff6b3d]', icon: '🍃' },
+  { name: 'Wellness', color: 'bg-[#f3f0ff]', textColor: 'text-[#7c3aed]', icon: '🧘' },
+  { name: 'Immunity', color: 'bg-[#fff7ed]', textColor: 'text-[#ea580c]', icon: '🛡️' },
+  { name: 'Natural Juices', color: 'bg-[#f0fdf4]', textColor: 'text-[#16a34a]', icon: '🧃' },
+  { name: 'Essential Oils', color: 'bg-[#fdf2f8]', textColor: 'text-[#db2777]', icon: '🏺' },
 ];
 
 const CategorySection = ({ onCategorySelect }) => {

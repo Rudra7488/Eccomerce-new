@@ -8,3 +8,29 @@
   --color-himalaya-light-orange: #fff3ef;
 }
 
+@keyframes brandReveal {
+  0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-brand {
+  display: inline-block;
+  animation: brandReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.brand-gradient {
+  background: linear-gradient(135deg, #006d5b 0%, #008f7a 50%, #ff6b3d 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 8s ease infinite;
+}
+
+

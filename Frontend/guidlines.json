@@ -41,5 +41,26 @@
     "borderRadius": "rounded-3xl (large) for cards, rounded-xl (medium) for inputs",
     "shadows": "shadow-sm for cards, shadow-lg for primary buttons",
     "button_style": "High padding, bold text, transition-all duration-300"
+  },
+  "mobile_responsiveness": {
+    "grid": {
+      "products": "grid-cols-2 for mobile (essential for better UX), sm:grid-cols-2, lg:grid-cols-4",
+      "categories": "grid-cols-2 for mobile, md:grid-cols-3, lg:grid-cols-6",
+      "gap": "gap-x-4 (small) for mobile, sm:gap-x-12 (large) for desktop"
+    },
+    "spacing": {
+      "container_padding": "px-1 to px-4 for mobile devices, sm:px-8 for desktop",
+      "margins": "mb-8 for mobile sections, mb-12 to mb-24 for desktop"
+    },
+    "typography": {
+      "headings": "text-2xl or 3xl for mobile, 4xl to 5xl for desktop",
+      "body": "text-[11px] or xs for mobile product names, sm:text-base for desktop",
+      "tracking": "Use tight tracking on mobile for long names"
+    },
+    "interactive": {
+      "buttons": "Large tap targets (py-2 or py-3), rounded corners for better feel",
+      "modals": "Full height/width or high-percentage width on mobile, max-w-7xl on desktop",
+      "visibility": "Use hidden/md:block for desktop-only elements like larger nav links"
+    }
   }
 }

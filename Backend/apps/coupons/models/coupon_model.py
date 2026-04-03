@@ -1,4 +1,5 @@
 from mongoengine import Document, StringField, FloatField, IntField, DateTimeField, BooleanField
+from django.utils import timezone
 import datetime
 
 class Coupon(Document):
@@ -11,8 +12,8 @@ class Coupon(Document):
     limit = IntField(default=0)  # 0 means unlimited
     usage_count = IntField(default=0)
     is_active = BooleanField(default=True)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
-    updated_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=timezone.now)
+    updated_at = DateTimeField(default=timezone.now)
 
     meta = {
         'collection': 'coupons',
@@ -20,7 +21,7 @@ class Coupon(Document):
     }
 
     def save(self, *args, **kwargs):
-        self.updated_at = datetime.datetime.utcnow()
+        self.updated_at = timezone.now()
         # Ensure code is uppercase
         if self.code:
             self.code = self.code.upper()
@@ -28,13 +29,48 @@ class Coupon(Document):
 
     @property
     def status(self):
-        now = datetime.datetime.utcnow()
-        if not self.is_active:
-            return 'disabled'
-        if now < self.start_date:
-            return 'upcoming'
-        if now > self.end_date:
-            return 'expired'
-        if self.limit > 0 and self.usage_count >= self.limit:
-            return 'limit_reached'
-        return 'active'
+        try:
+            now = timezone.now()
+            
+            # Simple, safe comparison
+            def is_future(dt):
+                if not dt: return False
+                try:
+                    return dt > now
+                except TypeError:
+                    # Comparison between naive and aware
+                    if timezone.is_aware(dt):
+                        return dt > timezone.make_aware(now)
+                    else:
+                        return dt > timezone.make_naive(now)
+
+            def is_past(dt):
+                if not dt: return False
+                try:
+                    return dt < now
+                except TypeError:
+                    # Comparison between naive and aware
+                    if timezone.is_aware(dt):
+                        return dt < timezone.make_aware(now)
+                    else:
+                        return dt < timezone.make_naive(now)
+
+            if is_future(self.start_date):
+                return 'upcoming'
+
+            if is_past(self.end_date):
+                return 'expired'
+
+            if not self.is_active:
+                return 'disabled'
+                
+            limit = getattr(self, 'limit', 0) or 0
+            usage_count = getattr(self, 'usage_count', 0) or 0
+
+            if limit > 0 and usage_count >= limit:
+                return 'limit_reached'
+                
+            return 'active'
+        except Exception as e:
+            print(f"Status error for {getattr(self, 'code', 'unknown')}: {e}")
+            return 'error'

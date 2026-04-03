@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models.user_model import User
 from apps.users.serializers.auth_serializers import UserSignupSerializer, UserLoginSerializer
+from utils.email_utils import send_welcome_email
 
 class SignupView(APIView):
     def post(self, request):
@@ -38,6 +39,13 @@ class SignupView(APIView):
             )
             user.set_password(password)
             user.save()
+
+            # Send welcome email
+            try:
+                send_welcome_email({"full_name": full_name, "email": email})
+            except Exception as e:
+                print(f"Error sending welcome email: {e}")
+
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,4 +1,5 @@
 from mongoengine import Document, StringField, EmailField, DateTimeField, EmbeddedDocument, ListField, EmbeddedDocumentField, BooleanField
+from django.utils import timezone
 import datetime
 import bcrypt
 import uuid
@@ -18,7 +19,7 @@ class User(Document):
     email = EmailField(required=True, unique=True)
     password = StringField(required=True)
     role = StringField(default='user', choices=['user', 'admin'])
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=timezone.now)
     addresses = ListField(EmbeddedDocumentField(Address))
 
     @property

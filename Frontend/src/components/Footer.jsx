@@ -9,11 +9,15 @@ const Footer = () => {
           {/* Column 1: Brand Info */}
           <div className="space-y-6">
             <div className="flex flex-col items-start group">
-              <span className="text-3xl font-black text-[#006d5b] tracking-tighter">MOZARI</span>
-              <div className="h-1 w-16 bg-[#ff6b3d] rounded-full"></div>
+              <span className="text-2xl font-black text-[#006d5b] tracking-tighter uppercase leading-none">
+                Shrigurudeo Ayurved
+                <br />
+                <span className="text-lg">Rasashala</span>
+              </span>
+              <div className="h-1 w-24 bg-[#ff6b3d] rounded-full mt-2"></div>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Experience the wellness of nature with MOZARI. Quality products, ancient wisdom, and modern science delivered to your doorstep.
+              Experience the wellness of nature with Shrigurudeo Ayurved Rasashala. Quality products, ancient wisdom, and modern science delivered to your doorstep.
             </p>
             <div className="space-y-4 pt-4">
               <div className="flex items-center gap-4 text-gray-600 group cursor-pointer">
@@ -26,7 +30,7 @@ const Footer = () => {
                 <div className="w-10 h-10 bg-[#fff3ef] text-[#ff6b3d] rounded-full flex items-center justify-center group-hover:bg-[#ff6b3d] group-hover:text-white transition-all">
                   <Mail size={18} />
                 </div>
-                <span className="text-sm font-bold group-hover:text-[#ff6b3d] transition-colors">support@mozari.com</span>
+                <span className="text-sm font-bold group-hover:text-[#ff6b3d] transition-colors">support@shrigurudeo.com</span>
               </div>
             </div>
           </div>
@@ -73,7 +77,7 @@ const Footer = () => {
         <div className="border-t border-gray-100 py-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest order-2 md:order-1">
-              © 2024 MOZARI Wellness India. All Rights Reserved.
+              © 2024 Shrigurudeo Ayurved Rasashala. All Rights Reserved.
             </p>
             
             <div className="flex items-center gap-4 order-1 md:order-2">

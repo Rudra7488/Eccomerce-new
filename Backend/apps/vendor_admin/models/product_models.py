@@ -1,5 +1,6 @@
 from mongoengine import Document, StringField, FloatField, IntField, ListField, ReferenceField, BooleanField, DateTimeField, EmbeddedDocument, EmbeddedDocumentField
 from apps.users.models.user_model import User
+from django.utils import timezone
 import datetime
 
 class ProductVariant(EmbeddedDocument):
@@ -25,8 +26,8 @@ class Product(Document):
     images = ListField(StringField())  # Store image URLs
     vendor = ReferenceField(User, required=True)  # Link product to vendor
     is_active = BooleanField(default=True)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
-    updated_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=timezone.now)
+    updated_at = DateTimeField(default=timezone.now)
 
     meta = {
         'collection': 'products',
@@ -38,7 +39,7 @@ class Product(Document):
     }
 
     def save(self, *args, **kwargs):
-        self.updated_at = datetime.datetime.utcnow()
+        self.updated_at = timezone.now()
         return super(Product, self).save(*args, **kwargs)
 
 
@@ -47,7 +48,7 @@ class Category(Document):
     description = StringField()
     image = StringField()  # URL to category image
     is_active = BooleanField(default=True)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=timezone.now)
 
     meta = {
         'collection': 'categories'

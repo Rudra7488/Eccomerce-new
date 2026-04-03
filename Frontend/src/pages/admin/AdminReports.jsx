@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { 
   BarChart, 
@@ -27,97 +28,93 @@ import {
   Package,
   Award,
   CreditCard,
-  Banknote
+  Banknote,
+  XCircle,
+  Activity
 } from 'lucide-react';
 
 const AdminReports = () => {
-  // Mock Data
-  const revenueData = [
-    { name: 'Jan', revenue: 4000, orders: 240, online: 180, offline: 60 },
-    { name: 'Feb', revenue: 3000, orders: 139, online: 100, offline: 39 },
-    { name: 'Mar', revenue: 2000, orders: 980, online: 700, offline: 280 },
-    { name: 'Apr', revenue: 2780, orders: 390, online: 290, offline: 100 },
-    { name: 'May', revenue: 1890, orders: 480, online: 380, offline: 100 },
-    { name: 'Jun', revenue: 2390, orders: 380, online: 280, offline: 100 },
-    { name: 'Jul', revenue: 3490, orders: 430, online: 330, offline: 100 },
-    { name: 'Aug', revenue: 4200, orders: 520, online: 420, offline: 100 },
-    { name: 'Sep', revenue: 3800, orders: 460, online: 360, offline: 100 },
-    { name: 'Oct', revenue: 5100, orders: 610, online: 510, offline: 100 },
-    { name: 'Nov', revenue: 4800, orders: 580, online: 480, offline: 100 },
-    { name: 'Dec', revenue: 6200, orders: 740, online: 640, offline: 100 },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [year, setYear] = useState('this');
+  const [data, setData] = useState({
+    revenueData: [],
+    dailyData: [],
+    paymentData: [],
+    topProducts: [],
+    categoryData: [],
+    stats: []
+  });
 
-  const dailyData = [
-    { day: 'Mon', sales: 1200 },
-    { day: 'Tue', sales: 1500 },
-    { day: 'Wed', sales: 1800 },
-    { day: 'Thu', sales: 1300 },
-    { day: 'Fri', sales: 2100 },
-    { day: 'Sat', sales: 2400 },
-    { day: 'Sun', sales: 1900 },
-  ];
+  useEffect(() => {
+    fetchAnalytics(year);
+  }, [year]);
 
-  const paymentData = [
-    { name: 'Online (Prepaid)', value: 854 },
-    { name: 'Offline (COD)', value: 380 },
-  ];
+  const fetchAnalytics = async (selectedYear) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
 
-  const topProducts = [
-    { id: 1, name: 'Premium Leather Jacket', category: 'Fashion', price: '₹4,500', sold: 124, revenue: '₹5,58,000', trend: '+12%', image: '🧥' },
-    { id: 2, name: 'Wireless Headphones', category: 'Electronics', price: '₹2,999', sold: 98, revenue: '₹2,93,902', trend: '+8%', image: '🎧' },
-    { id: 3, name: 'Smart Watch Series 5', category: 'Electronics', price: '₹5,499', sold: 85, revenue: '₹4,67,415', trend: '+15%', image: '⌚' },
-    { id: 4, name: 'Running Shoes', category: 'Sports', price: '₹1,899', sold: 76, revenue: '₹1,44,324', trend: '+5%', image: '👟' },
-    { id: 5, name: 'Cotton T-Shirt', category: 'Fashion', price: '₹499', sold: 245, revenue: '₹1,22,255', trend: '+22%', image: '👕' },
-  ];
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vendor-admin/analytics/?year=${selectedYear}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-  const categoryData = [
-    { name: 'Electronics', value: 400 },
-    { name: 'Fashion', value: 300 },
-    { name: 'Home', value: 300 },
-    { name: 'Sports', value: 200 },
-  ];
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      const analyticsData = await response.json();
+      setData(analyticsData);
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      toast.error('Failed to load real-time reports');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
   const PAYMENT_COLORS = ['#8b5cf6', '#f97316'];
 
-  const stats = [
-    {
-      title: 'Total Revenue',
-      value: '₹12,45,000',
-      change: '+12.5%',
-      isUp: true,
-      icon: DollarSign,
-      color: 'text-green-600',
-      bg: 'bg-green-50'
-    },
-    {
-      title: 'Online Orders (Prepaid)',
-      value: '854',
-      change: '+15.3%',
-      isUp: true,
-      icon: CreditCard,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50'
-    },
-    {
-      title: 'Offline Orders (COD)',
-      value: '380',
-      change: '-5.2%',
-      isUp: false,
-      icon: Banknote,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50'
-    },
-    {
-      title: 'Total Orders',
-      value: '1,234',
-      change: '+8.2%',
-      isUp: true,
-      icon: ShoppingCart,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50'
+  const getIcon = (type) => {
+    switch (type) {
+      case 'revenue': return DollarSign;
+      case 'online': return CreditCard;
+      case 'offline': return Banknote;
+      case 'orders': return ShoppingCart;
+      case 'cancelled_revenue': return XCircle;
+      case 'cancelled_orders': return Activity;
+      default: return TrendingUp;
     }
-  ];
+  };
+
+  const getColors = (type) => {
+    switch (type) {
+      case 'revenue': return { color: 'text-green-600', bg: 'bg-green-50' };
+      case 'online': return { color: 'text-purple-600', bg: 'bg-purple-50' };
+      case 'offline': return { color: 'text-orange-600', bg: 'bg-orange-50' };
+      case 'orders': return { color: 'text-blue-600', bg: 'bg-blue-50' };
+      case 'cancelled_revenue': return { color: 'text-red-600', bg: 'bg-red-50' };
+      case 'cancelled_orders': return { color: 'text-pink-600', bg: 'bg-pink-50' };
+      default: return { color: 'text-gray-600', bg: 'bg-gray-50' };
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col justify-center items-center h-[70vh] bg-white rounded-3xl border border-orange-100 shadow-sm">
+          <div className="h-16 w-16 rounded-full border-4 border-gray-100 border-t-orange-500 animate-spin"></div>
+          <p className="mt-4 text-gray-500 font-medium">Generating your reports...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const { revenueData, dailyData, paymentData, topProducts, categoryData, stats } = data;
 
   return (
     <AdminLayout>
@@ -127,24 +124,28 @@ const AdminReports = () => {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white p-6 rounded-3xl border border-orange-100 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center`}>
-                <stat.icon size={24} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = getIcon(stat.type);
+          const { color, bg } = getColors(stat.type);
+          return (
+            <div key={index} className="bg-white p-6 rounded-3xl border border-orange-100 shadow-sm hover:shadow-md transition-all">
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 ${bg} ${color} rounded-2xl flex items-center justify-center`}>
+                  <Icon size={24} />
+                </div>
+                <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${stat.isUp ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'}`}>
+                  {stat.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  {stat.change}
+                </div>
               </div>
-              <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${stat.isUp ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'}`}>
-                {stat.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                {stat.change}
+              <div>
+                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</h3>
               </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</h3>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Charts Grid */}
@@ -153,9 +154,13 @@ const AdminReports = () => {
         <div className="bg-white p-6 rounded-3xl border border-orange-100 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold text-gray-900">Revenue Analytics</h2>
-            <select className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 text-sm outline-none focus:border-orange-500">
-              <option>This Year</option>
-              <option>Last Year</option>
+            <select 
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 text-sm outline-none focus:border-orange-500"
+            >
+              <option value="this">This Year</option>
+              <option value="last">Last Year</option>
             </select>
           </div>
           <div className="h-80 w-full">
@@ -265,8 +270,12 @@ const AdminReports = () => {
                   <tr key={product.id} className="hover:bg-orange-50/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl shadow-sm border border-gray-200">
-                          {product.image}
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-200">
+                          {product.image?.startsWith('http') || product.image?.startsWith('data') ? (
+                            <img src={product.image} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xl">{product.image || '📦'}</span>
+                          )}
                         </div>
                         <div>
                           <p className="font-bold text-gray-900 text-sm">{product.name}</p>

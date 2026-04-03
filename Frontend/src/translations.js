@@ -18,12 +18,12 @@ export const translations = {
     
     // Categories
     top_categories: "Shop Our Top Categories",
-    Furniture: "Furniture",
-    "Hand Bag": "Hand Bag",
-    Books: "Books",
-    Tech: "Tech",
-    Sneakers: "Sneakers",
-    Groceries: "Groceries",
+    Ayurveda: "Ayurveda",
+    "Herbal Care": "Herbal Care",
+    Wellness: "Wellness",
+    Immunity: "Immunity",
+    "Natural Juices": "Natural Juices",
+    "Essential Oils": "Essential Oils",
 
     // Deals / Products
     add_to_cart: "Add to Cart",
@@ -49,6 +49,7 @@ export const translations = {
     phone_number: "Phone Number",
     street_address: "Street Address",
     city: "City",
+    state: "State",
     zip_code: "Zip Code",
     payment_method: "Payment Method",
     cod: "Cash on Delivery",
@@ -83,12 +84,12 @@ export const translations = {
     
     // Categories
     top_categories: "हमारी शीर्ष श्रेणियां",
-    Furniture: "फर्नीचर",
-    "Hand Bag": "हैंड बैग",
-    Books: "किताबें",
-    Tech: "टेक",
-    Sneakers: "स्नीकर्स",
-    Groceries: "किराना",
+    Ayurveda: "आयुर्वेद",
+    "Herbal Care": "हर्बल केयर",
+    Wellness: "कल्याण",
+    Immunity: "प्रतिरक्षा",
+    "Natural Juices": "प्राकृतिक रस",
+    "Essential Oils": "आवश्यक तेल",
 
     // Deals / Products
     add_to_cart: "कार्ट में जोड़ें",
@@ -149,12 +150,12 @@ export const translations = {
     
     // Categories
     top_categories: "आमच्या शीर्ष श्रेणी खरेदी करा",
-    Furniture: "फर्निचर",
-    "Hand Bag": "हँड बॅग",
-    Books: "पुस्तके",
-    Tech: "टेक",
-    Sneakers: "स्नीकर्स",
-    Groceries: "किराणा",
+    Ayurveda: "आयुर्वेद",
+    "Herbal Care": "हर्बल काळजी",
+    Wellness: "कल्याण",
+    Immunity: "प्रतिकारशक्ती",
+    "Natural Juices": "नैसर्गिक रस",
+    "Essential Oils": "आवश्यक तेले",
 
     // Deals / Products
     add_to_cart: "कार्टमध्ये जोडा",

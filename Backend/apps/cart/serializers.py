@@ -5,9 +5,15 @@ from apps.vendor_admin.serializers.product_serializers import ProductListSeriali
 class CartItemSerializer(serializers.Serializer):
     product = ProductListSerializer(read_only=True)
     quantity = serializers.IntegerField(min_value=1)
+    variant_size = serializers.CharField(required=False, allow_null=True)
     total_price = serializers.SerializerMethodField()
 
     def get_total_price(self, obj):
+        # Calculate price based on variant if available
+        if obj.variant_size and obj.product.variants:
+            for v in obj.product.variants:
+                if v.size == obj.variant_size:
+                    return v.price * obj.quantity
         return obj.product.price * obj.quantity
 
 class CartSerializer(serializers.Serializer):
@@ -21,4 +27,13 @@ class CartSerializer(serializers.Serializer):
         return sum(item.quantity for item in obj.items)
 
     def get_total_amount(self, obj):
-        return sum(item.product.price * item.quantity for item in obj.items)
+        total = 0
+        for item in obj.items:
+            item_price = item.product.price
+            if item.variant_size and item.product.variants:
+                for v in item.product.variants:
+                    if v.size == item.variant_size:
+                        item_price = v.price
+                        break
+            total += item_price * item.quantity
+        return total

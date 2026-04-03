@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from apps.users.permissions import IsAdminRole
 from apps.coupons.models.coupon_model import Coupon
 from apps.coupons.serializers.coupon_serializer import CouponSerializer
@@ -98,7 +98,20 @@ class ValidateCouponView(APIView):
 
         # Coupon is valid
         serializer = CouponSerializer(coupon)
-        return Response({
-            "message": "Coupon applied successfully",
-            "coupon": serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response(serializer.data)
+
+class PublicCouponListView(APIView):
+    """
+    Public view for users to see all currently active coupons
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # Get all coupons where is_active is True
+        all_coupons = Coupon.objects(is_active=True)
+        
+        # Filter for only those that are currently 'active' based on dates and limits
+        active_coupons = [c for c in all_coupons if c.status == 'active']
+        
+        serializer = CouponSerializer(active_coupons, many=True)
+        return Response(serializer.data)
