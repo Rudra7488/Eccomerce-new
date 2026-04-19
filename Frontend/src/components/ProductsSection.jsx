@@ -76,10 +76,11 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
   // Reset active image and variant when product changes
   useEffect(() => {
-    if (selectedProduct) {
+    if (selectedProduct && !selectedProduct.isFullyLoaded) {
       setActiveImageIndex(0);
       setSelectedVariant(selectedProduct.variants?.[0] || null);
       fetchReviews(selectedProduct.id);
+      fetchProductDetail(selectedProduct.id);
       setPincode('');
       setPincodeStatus(null);
     }
@@ -97,6 +98,24 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
       console.error('Error fetching reviews:', err);
     } finally {
       setReviewsLoading(false);
+    }
+  };
+
+  const fetchProductDetail = async (productId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/public/${productId}/`);
+      if (response.ok) {
+        const data = await response.json();
+        // Update selected product with fresh data from backend
+        setSelectedProduct(prev => ({ ...prev, ...data, isFullyLoaded: true }));
+        
+        // If variants exist and none is selected, select the first one
+        if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching product details:', err);
     }
   };
 
@@ -174,7 +193,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
   const filteredProducts = products.filter(product => {
     const productPrice = getMinPrice(product);
     const matchesCategory = selectedCategory && selectedCategory !== 'All'
-      ? product.category === selectedCategory
+      ? product.category?.toLowerCase() === selectedCategory.toLowerCase()
       : true;
 
     const matchesSearch = searchQuery
@@ -184,7 +203,8 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
       : true;
 
     const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
-    const isAvailable = product.stock_quantity > 0;
+    // Show if is_active is true (or undefined for backward compatibility)
+    const isAvailable = product.is_active !== false; 
 
     return matchesCategory && matchesSearch && matchesPrice && isAvailable;
   }).sort((a, b) => {
@@ -436,12 +456,10 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                 <div className="pt-2 sm:pt-4 flex flex-col gap-2">
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full py-2 sm:py-3 rounded-tl-[15px] sm:rounded-tl-[30px] rounded-br-[15px] sm:rounded-br-[30px] rounded-tr-none rounded-bl-none font-black text-[8px] sm:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all bg-[#006d5b] text-white hover:bg-[#005c4b] active:scale-[0.98]"
+                    className="w-full py-2 sm:py-3 rounded-tl-[15px] sm:rounded-tl-[30px] rounded-br-[15px] sm:rounded-br-[30px] rounded-tr-none rounded-bl-none font-black text-[8px] sm:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all bg-[#006d5b] text-white hover:bg-[#005c4b] active:scale-[0.98] cursor-pointer"
                   >
                     ADD TO CART
                   </button>
-
-                  
                 </div>
               </div>
             </div>
@@ -474,14 +492,28 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
               <div className="flex flex-col lg:flex-row gap-16 mb-24">
                 {/* Left: Vertical Thumbnails and Main Image */}
-                <div className="w-full lg:w-3/5 flex gap-6">
+                <div className="w-full lg:w-3/5 flex flex-col md:flex-row gap-6 h-fit lg:sticky lg:top-32">
                   {/* Thumbnails Column */}
-                  <div className="hidden md:flex flex-col gap-4 w-20">
+                  <div className="hidden md:flex flex-col gap-4 w-24">
                     {selectedProduct.images?.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`w-20 h-20 rounded-lg border-2 transition-all overflow-hidden bg-gray-50 flex items-center justify-center p-2 ${activeImageIndex === idx ? 'border-[#006d5b] shadow-md' : 'border-gray-100 hover:border-gray-200'
+                        className={`w-24 h-24 rounded-xl border-2 transition-all overflow-hidden bg-white flex items-center justify-center p-2 cursor-pointer ${activeImageIndex === idx ? 'border-[#006d5b] shadow-lg scale-105' : 'border-gray-100 hover:border-gray-300'
+                          }`}
+                      >
+                        <img src={img} alt="" className="w-full h-full object-contain" />
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Mobile Thumbnails (Horizontal) */}
+                  <div className="flex md:hidden gap-3 overflow-x-auto pb-2 no-scrollbar">
+                    {selectedProduct.images?.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveImageIndex(idx)}
+                        className={`min-w-[80px] h-20 rounded-lg border-2 transition-all overflow-hidden bg-white flex items-center justify-center p-2 cursor-pointer ${activeImageIndex === idx ? 'border-[#006d5b]' : 'border-gray-100'
                           }`}
                       >
                         <img src={img} alt="" className="w-full h-full object-contain" />
@@ -490,32 +522,32 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                   </div>
 
                   {/* Main Image View */}
-                  <div className="flex-1 bg-white rounded-2xl overflow-hidden flex items-center justify-center relative group min-h-[400px] md:min-h-[600px] border border-gray-50">
+                  <div className="flex-1 bg-white rounded-[32px] overflow-hidden flex items-center justify-center relative min-h-[400px] md:min-h-[700px] border border-gray-100 shadow-sm">
                     {selectedProduct.images && selectedProduct.images.length > 0 ? (
                       <img
                         src={selectedProduct.images[activeImageIndex]}
                         alt={selectedProduct.name}
-                        className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-contain p-4"
                       />
                     ) : (
                       <div className="text-9xl">📦</div>
                     )}
+                  </div>
 
-                    {/* Mobile Navigation Arrows */}
-                    <div className="md:hidden">
-                      <button
-                        onClick={() => setActiveImageIndex(prev => prev === 0 ? selectedProduct.images.length - 1 : prev - 1)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <button
-                        onClick={() => setActiveImageIndex(prev => prev === selectedProduct.images.length - 1 ? 0 : prev + 1)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </div>
+                  {/* Mobile Navigation Arrows */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={() => setActiveImageIndex(prev => prev === 0 ? selectedProduct.images.length - 1 : prev - 1)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      onClick={() => setActiveImageIndex(prev => prev === selectedProduct.images.length - 1 ? 0 : prev + 1)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
                   </div>
                 </div>
 
@@ -546,31 +578,73 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                   </div>
 
                   {/* Variant Selection Boxes */}
-                  {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                  {( (selectedProduct.variants && selectedProduct.variants.length > 0) || selectedProduct.unit_value || selectedProduct.unit_type || selectedProduct.dose ) && (
                     <div className="space-y-4">
-                      <div className="flex flex-wrap gap-3">
-                        {selectedProduct.variants.map((variant, idx) => (
+                      <div className="flex flex-wrap gap-4">
+                        {/* If variants exist, show them. Otherwise, show a single box with dose or unit info */}
+                        {selectedProduct.variants && selectedProduct.variants.length > 0 ? (
+                          selectedProduct.variants.map((variant, idx) => {
+                            // Smart format for variants: 
+                            // 1. If size is just a number (e.g. "50") -> "50 Tablets"
+                            // 2. If it already has a unit (e.g. "50ml", "50g") -> keep as is
+                            const displaySize = /^\d+$/.test(variant.size.toString()) 
+                              ? `${variant.size} ${selectedProduct.unit_type === 'tablet' ? 'Tablets' : selectedProduct.unit_type || ''}`.trim()
+                              : variant.size;
+
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => setSelectedVariant(variant)}
+                                className={`group relative flex flex-col w-32 rounded-xl border-2 transition-all overflow-hidden ${
+                                  selectedVariant?.size === variant.size
+                                    ? 'border-[#4dc7b5] shadow-lg scale-105'
+                                    : 'border-gray-100 hover:border-[#4dc7b5]/50'
+                                }`}
+                              >
+                                <div className={`w-full py-2 px-2 text-center text-[11px] font-bold transition-colors ${
+                                  selectedVariant?.size === variant.size
+                                    ? 'bg-[#4dc7b5] text-white'
+                                    : 'bg-gray-50 text-gray-500 group-hover:bg-[#4dc7b5]/10 group-hover:text-[#4dc7b5]'
+                                }`}>
+                                  {displaySize}
+                                </div>
+                                <div className="w-full py-3 px-2 bg-white text-center">
+                                  <div className={`text-base font-bold ${
+                                    selectedVariant?.size === variant.size ? 'text-gray-900' : 'text-gray-600'
+                                  }`}>
+                                    ₹{variant.price}
+                                  </div>
+                                </div>
+                                {selectedVariant?.size === variant.size && (
+                                  <div className="absolute top-1 right-1 bg-white/20 rounded-full p-0.5">
+                                    <Check size={8} className="text-white" />
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          /* Default single box when no variants exist */
                           <button
-                            key={idx}
-                            onClick={() => setSelectedVariant(variant)}
-                            className={`flex flex-col items-center justify-center px-6 py-3 rounded-md border-2 transition-all min-w-[120px] ${selectedVariant?.size === variant.size
-                              ? 'border-[#006d5b] bg-[#006d5b]/5'
-                              : 'border-gray-100 hover:border-gray-200'
-                              }`}
+                            className="group relative flex flex-col w-40 rounded-xl border-2 border-[#4dc7b5] shadow-lg scale-105 transition-all overflow-hidden"
                           >
-                            <div className={`text-xs font-black uppercase mb-1 ${selectedVariant?.size === variant.size ? 'text-[#006d5b]' : 'text-gray-400'}`}>
-                              {variant.size}
+                            <div className="w-full py-2 px-3 text-center text-[10px] font-black bg-[#4dc7b5] text-white uppercase tracking-widest">
+                              {selectedProduct.dose 
+                                ? (/^\d+$/.test(selectedProduct.dose.toString()) ? `${selectedProduct.dose} Tablets` : selectedProduct.dose)
+                                : (selectedProduct.unit_type === 'tablet'
+                                  ? `${selectedProduct.unit_value} Tablets`
+                                  : `${selectedProduct.unit_value || ''} ${selectedProduct.unit_type || ''}`.trim()) || 'Product Info'}
                             </div>
-                            <div className={`text-sm font-bold ${selectedVariant?.size === variant.size ? 'text-[#006d5b]' : 'text-gray-900'}`}>
-                              ₹{variant.price}
-                            </div>
-                            {selectedVariant?.size === variant.size && (
-                              <div className="absolute -top-2 -right-2 bg-[#006d5b] text-white rounded-full p-1 shadow-md">
-                                <Check size={10} />
+                            <div className="w-full py-3 px-3 bg-white text-center">
+                              <div className="text-base font-bold text-gray-900">
+                                ₹{selectedProduct.price}
                               </div>
-                            )}
+                            </div>
+                            <div className="absolute top-1 right-1 bg-white/20 rounded-full p-0.5">
+                              <Check size={8} className="text-white" />
+                            </div>
                           </button>
-                        ))}
+                        )}
                       </div>
                     </div>
                   )}
@@ -598,13 +672,24 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="flex gap-4 pt-4">
                       <button
                         onClick={() => handleAddToCart(selectedProduct, selectedProduct.images[activeImageIndex], selectedVariant)}
-                        className="w-full py-5 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-900/10 active:scale-[0.98]"
+                        className="flex-1 py-5 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-900/10 active:scale-[0.98] cursor-pointer"
                       >
                         <ShoppingCart size={20} />
                         ADD TO CART
+                      </button>
+                      <button
+                        onClick={() => handleToggleWishlist(selectedProduct)}
+                        className={`flex-1 py-5 rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none border-2 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] font-black uppercase tracking-[0.2em] text-xs cursor-pointer ${
+                          isItemInWishlist(selectedProduct.id)
+                            ? 'border-red-500 text-red-500 bg-red-50'
+                            : 'border-gray-100 text-gray-400 hover:border-red-200 hover:text-red-400 bg-white'
+                        }`}
+                      >
+                        <Heart size={20} className={isItemInWishlist(selectedProduct.id) ? 'fill-current' : ''} />
+                        WISHLIST
                       </button>
                     </div>
 
@@ -661,20 +746,11 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
 
                   {/* Product Details Text */}
                   <div className="space-y-8 pt-12 border-t border-gray-100">
-                    <div>
-                      <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight leading-tight">
-                        {selectedProduct.description.split('.')[0]}.
-                      </h3>
-                      <p className="text-gray-500 font-medium leading-relaxed">
-                        {selectedProduct.description}
-                      </p>
-                    </div>
-
-                    {selectedProduct.ingredients && (
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">INGREDIENTS:</h4>
-                        <p className="text-gray-500 font-medium leading-relaxed text-sm">
-                          {selectedProduct.ingredients}
+                    {selectedProduct.ingredients && selectedProduct.ingredients.trim() !== "" && (
+                      <div className="flex items-baseline gap-2">
+                        <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest flex-shrink-0">INGREDIENTS:</h4>
+                        <p className="text-gray-500 font-medium leading-relaxed text-sm whitespace-pre-wrap">
+                          {selectedProduct.ingredients.split(/[,\n]/).map(i => i.trim()).filter(i => i).join(', ')}
                         </p>
                       </div>
                     )}
@@ -682,22 +758,57 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                     {/* Accordion Sections */}
                     <div className="border-t border-gray-100">
                       {[
-                        { title: 'ADDITIONAL INFORMATION', content: selectedProduct.uses },
-                        { title: 'DOSAGE', content: selectedProduct.dose },
-                        { title: 'BEST BEFORE', content: selectedProduct.expiry_date ? new Date(selectedProduct.expiry_date).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : null }
+                        { 
+                          title: 'ADDITIONAL INFORMATION:', 
+                          content: (
+                            <div className="space-y-8 py-2">
+                              {/* Detailed Description */}
+                              <div className="space-y-2">
+                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Description:</h4>
+                                <p className="text-gray-500 font-medium leading-relaxed text-sm">{selectedProduct.description}</p>
+                              </div>
+
+                              {/* Uses */}
+                              {selectedProduct.uses && (
+                                <div className="space-y-2">
+                                  <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Uses:</h4>
+                                  <p className="text-gray-500 font-medium leading-relaxed text-sm">{selectedProduct.uses}</p>
+                                </div>
+                              )}
+
+                              {/* Contra Indications */}
+                              {selectedProduct.contra_indications && (
+                                <div className="space-y-2">
+                                  <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Contra Indications:</h4>
+                                  <p className="text-gray-500 font-medium leading-relaxed text-sm">{selectedProduct.contra_indications}</p>
+                                </div>
+                              )}
+
+                              {/* Best Before */}
+                              {selectedProduct.expiry_date && (
+                                <div className="space-y-2">
+                                  <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Best Before:</h4>
+                                  <p className="text-gray-500 font-medium leading-relaxed text-sm">
+                                    {new Date(selectedProduct.expiry_date).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        }
                       ].map((section, idx) => (
                         section.content && (
                           <div key={idx} className="border-b border-gray-100">
                             <button
                               onClick={() => setOpenAccordion(openAccordion === idx ? null : idx)}
-                              className="w-full py-6 flex items-center justify-between group"
+                              className="w-full py-6 flex items-center justify-between group cursor-pointer"
                             >
-                              <span className="text-xs font-black text-gray-400 group-hover:text-gray-900 tracking-[0.2em] transition-colors uppercase">{section.title}</span>
-                              <ChevronDown size={18} className={`text-gray-400 group-hover:text-gray-900 transition-transform ${openAccordion === idx ? 'rotate-180' : ''}`} />
+                              <span className="text-xs font-black text-gray-900 tracking-[0.1em] transition-colors uppercase">{section.title}</span>
+                              <ChevronDown size={18} className={`text-gray-400 group-hover:text-gray-900 transition-transform duration-300 ${openAccordion === idx ? 'rotate-180' : ''}`} />
                             </button>
                             {openAccordion === idx && (
                               <div className="pb-6 animate-in slide-in-from-top-2 duration-300">
-                                <p className="text-sm text-gray-500 font-medium leading-relaxed">{section.content}</p>
+                                <div className="text-sm text-gray-500 font-medium leading-relaxed">{section.content}</div>
                               </div>
                             )}
                           </div>
@@ -724,7 +835,7 @@ const ProductsSection = ({ selectedCategory: propCategory, searchQuery }) => {
                       <p className="text-sm font-bold text-gray-900 mb-6">₹{product.price}</p>
                       <button
                         onClick={() => handleAddToCart(product)}
-                        className="w-full py-3 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none text-xs font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all"
+                        className="w-full py-3 bg-[#006d5b] text-white rounded-tl-[30px] rounded-br-[30px] rounded-tr-none rounded-bl-none text-xs font-black uppercase tracking-[0.2em] hover:bg-[#005c4b] transition-all cursor-pointer"
                       >
                         ADD TO CART
                       </button>

@@ -288,15 +288,32 @@ const ProductManagement = () => {
     try {
       const imageUrls = uploadedImages.map(image => image.url);
       
-      // Ensure correct data types
+      // Ensure correct data types and filter empty variants
+      const cleanedVariants = formData.variants
+        .filter(v => v.size.trim() !== '' && v.price !== '')
+        .map(v => ({
+          size: v.size,
+          price: parseFloat(v.price) || 0,
+          stock: parseInt(v.stock) || 0
+        }));
+
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         category: formData.category,
+        product_type: formData.product_type,
+        unit_type: formData.unit_type,
+        unit_value: parseFloat(formData.unit_value) || 0,
+        expiry_date: formData.expiry_date || null,
+        variants: cleanedVariants,
+        ingredients: formData.ingredients,
+        uses: formData.uses,
+        dose: formData.dose,
+        contra_indications: formData.contra_indications,
         images: imageUrls,
-        is_active: formData.is_active
+        is_active: formData.is_active === undefined ? true : formData.is_active
       };
       
       const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
@@ -339,15 +356,32 @@ const ProductManagement = () => {
     try {
       const imageUrls = uploadedImages.map(image => image.url);
       
-      // Ensure correct data types
+      // Ensure correct data types and filter empty variants
+      const cleanedVariants = formData.variants
+        .filter(v => v.size.trim() !== '' && v.price !== '')
+        .map(v => ({
+          size: v.size,
+          price: parseFloat(v.price) || 0,
+          stock: parseInt(v.stock) || 0
+        }));
+
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         category: formData.category,
+        product_type: formData.product_type,
+        unit_type: formData.unit_type,
+        unit_value: parseFloat(formData.unit_value) || 0,
+        expiry_date: formData.expiry_date || null,
+        variants: cleanedVariants,
+        ingredients: formData.ingredients,
+        uses: formData.uses,
+        dose: formData.dose,
+        contra_indications: formData.contra_indications,
         images: imageUrls,
-        is_active: formData.is_active
+        is_active: formData.is_active === undefined ? true : formData.is_active
       };
       
       const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
@@ -664,120 +698,64 @@ const ProductManagement = () => {
                     </div>
                   </div>
 
-                  {/* Product Type & Specifications */}
+                  {/* Medical & Usage Info Section */}
                   <div className="space-y-6 pt-2">
                     <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
                       <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
-                      Product Specifications
+                      Medical & Usage Information
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-400 ml-1">Product Type</label>
-                        <select
-                          value={formData.product_type}
-                          onChange={(e) => setFormData({...formData, product_type: e.target.value, unit_type: e.target.value === 'Liquid' ? 'ml' : 'g'})}
-                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
-                        >
-                          <option value="Solid">Solid (Weight)</option>
-                          <option value="Liquid">Liquid (Volume)</option>
-                        </select>
+                        <label className="text-sm font-bold text-gray-400 ml-1">Ingredients</label>
+                        <textarea
+                          value={formData.ingredients}
+                          onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
+                          rows="3"
+                          placeholder="List of ingredients..."
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
+                        ></textarea>
                       </div>
-
+                      
                       <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-400 ml-1">Size / Weight Value</label>
+                        <label className="text-sm font-bold text-gray-400 ml-1">Uses</label>
+                        <textarea
+                          value={formData.uses}
+                          onChange={(e) => setFormData({...formData, uses: e.target.value})}
+                          rows="3"
+                          placeholder="What is it used for?"
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-400 ml-1">Recommended Dose</label>
                         <input
-                          type="number"
-                          value={formData.unit_value}
-                          onChange={(e) => setFormData({...formData, unit_value: e.target.value})}
-                          placeholder="e.g. 100, 500, 1"
+                          type="text"
+                          value={formData.dose}
+                          onChange={(e) => setFormData({...formData, dose: e.target.value})}
+                          placeholder="e.g. 1-2 tablets twice daily"
                           className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                         />
                       </div>
-
+                      
                       <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-400 ml-1">Unit</label>
-                        <select
-                          value={formData.unit_type}
-                          onChange={(e) => setFormData({...formData, unit_type: e.target.value})}
-                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
-                        >
-                          {formData.product_type === 'Solid' ? (
-                            <>
-                              <option value="g">Grams (g)</option>
-                              <option value="kg">Kilograms (kg)</option>
-                              <option value="pc">Pieces (pc)</option>
-                              <option value="unit">Unit</option>
-                            </>
-                          ) : (
-                            <>
-                              <option value="ml">Milliliters (ml)</option>
-                              <option value="ltr">Liters (ltr)</option>
-                            </>
-                          )}
-                        </select>
+                        <label className="text-sm font-bold text-gray-400 ml-1">Contra-indications</label>
+                        <input
+                          type="text"
+                          value={formData.contra_indications}
+                          onChange={(e) => setFormData({...formData, contra_indications: e.target.value})}
+                          placeholder="e.g. Not for children under 5"
+                          className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Medical & Usage Info Section */}
-                <div className="space-y-6 pt-2">
-                  <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
-                    <span className="h-1 w-6 bg-[#6366F1] rounded-full"></span>
-                    Medical & Usage Information
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-400 ml-1">Ingredients</label>
-                      <textarea
-                        value={formData.ingredients}
-                        onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
-                        rows="3"
-                        placeholder="List of ingredients..."
-                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
-                      ></textarea>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-400 ml-1">Uses</label>
-                      <textarea
-                        value={formData.uses}
-                        onChange={(e) => setFormData({...formData, uses: e.target.value})}
-                        rows="3"
-                        placeholder="What is it used for?"
-                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
-                      ></textarea>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-400 ml-1">Recommended Dose</label>
-                      <input
-                        type="text"
-                        value={formData.dose}
-                        onChange={(e) => setFormData({...formData, dose: e.target.value})}
-                        placeholder="e.g. 1-2 tablets twice daily"
-                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-400 ml-1">Contra-indications</label>
-                      <input
-                        type="text"
-                        value={formData.contra_indications}
-                        onChange={(e) => setFormData({...formData, contra_indications: e.target.value})}
-                        placeholder="e.g. Not for children under 5"
-                        className="w-full px-5 py-4 bg-[#0F172A] text-[#F9FAFB] border border-gray-800 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-                      />
-                    </div>
-                  </div>
-                  </div>
-
-                  {/* Product Variants Section */}
+                {/* Product Variants Section */}
                   <div className="space-y-6 pt-4 border-t border-gray-800">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-[#6366F1] font-bold text-sm uppercase tracking-wider">
@@ -807,7 +785,7 @@ const ProductManagement = () => {
                               value={variant.size}
                               onChange={(e) => {
                                 const newVariants = [...formData.variants];
-                                newVariants[index].size = e.target.value;
+                                newVariants[index] = { ...newVariants[index], size: e.target.value };
                                 setFormData({ ...formData, variants: newVariants });
                               }}
                               placeholder="100ml"
@@ -821,7 +799,7 @@ const ProductManagement = () => {
                               value={variant.price}
                               onChange={(e) => {
                                 const newVariants = [...formData.variants];
-                                newVariants[index].price = e.target.value;
+                                newVariants[index] = { ...newVariants[index], price: e.target.value };
                                 setFormData({ ...formData, variants: newVariants });
                               }}
                               placeholder="299"
@@ -835,7 +813,7 @@ const ProductManagement = () => {
                               value={variant.stock}
                               onChange={(e) => {
                                 const newVariants = [...formData.variants];
-                                newVariants[index].stock = e.target.value;
+                                newVariants[index] = { ...newVariants[index], stock: e.target.value };
                                 setFormData({ ...formData, variants: newVariants });
                               }}
                               placeholder="50"
