@@ -14,7 +14,7 @@ class VendorAdminConfig(AppConfig):
         
         # Connect to MongoDB when the app is ready
         try:
-            MONGODB_URI = config('MONGODB_URI', default='mongodb://localhost:27017/ecommercemozari')
+            MONGODB_URI = config('MONGODB_URI')
             # Only connect if not already connected
             if not mongoengine.connection.get_connection():
                 mongoengine.connect(host=MONGODB_URI)
