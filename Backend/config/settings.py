@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Connect to MongoDB
 try:
-    MONGODB_URI = config('MONGODB_URI', default='mongodb://localhost:27017/ecommercemozari')
+    MONGODB_URI = config('MONGODB_URI')
     mongoengine.connect(host=MONGODB_URI)
     print("✅ MongoDB connected successfully!")
 except Exception as e:
