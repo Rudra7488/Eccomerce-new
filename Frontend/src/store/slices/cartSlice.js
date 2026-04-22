@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+console.log("ENV URL:", import.meta.env.VITE_API_BASE_URL);
 
 const getHeaders = () => {
   const token = localStorage.getItem('accessToken');
