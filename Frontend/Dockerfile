@@ -6,7 +6,7 @@ WORKDIR /appls
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm installs
 
 # Copy source code
 COPY . 
