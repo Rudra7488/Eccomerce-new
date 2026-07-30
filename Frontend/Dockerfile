@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy source code
-COPY . .
+COPY . 
 
 # Expose Vite's default port
 EXPOSE 5173
