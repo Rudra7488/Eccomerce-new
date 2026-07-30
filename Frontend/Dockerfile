@@ -1,15 +1,15 @@
 FROM node:20-alpine
 
-WORKDIR /applsss
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm installs
+RUN npm install
 
 # Copy source code
-COPY . 
+COPY . .
 
 # Expose Vite's default port
 EXPOSE 5173
